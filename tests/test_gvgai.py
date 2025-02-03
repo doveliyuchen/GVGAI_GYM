@@ -9,3 +9,7 @@ def test_gvgaiENV():
         return True
     except Exception as er:
         assert False, er
+
+
+if __name__ == "__main__":
+    print(test_gvgaiENV())
