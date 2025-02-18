@@ -7,6 +7,30 @@ import re
 import pygame
 import matplotlib.pyplot as plt
 
+# **封装LLM**
+class LLMClient:
+    def __init__(self, model_name="default"):
+        self.model_name = model_name
+
+    def query(self, prompt):
+        if self.model_name == "deepseek":
+            from deepseek_api import DeepSeekAPI
+            api = DeepSeekAPI(api_key=os.getenv("DEEPSEEK_API_KEY"))
+            response = api.generate(prompt)
+        elif self.model_name == "qwen":
+            from qwen_api import QwenAPI
+            api = QwenAPI(api_key=os.getenv("QWEN_API_KEY"))
+            response = api.generate(prompt)
+        elif self.model_name == "claude":
+            from claude_api import ClaudeAPI
+            api = ClaudeAPI(api_key=os.getenv("CLAUDE_API_KEY"))
+            response = api.generate(prompt)
+        else:
+            raise ValueError(f"Unsupported model: {self.model_name}")
+
+
+        return response["text"]
+
 # **显示当前状态**
 def show_state(env, step, name, info, vgdl_representation=None):
     plt.figure(3)
@@ -36,7 +60,7 @@ def show_state(env, step, name, info, vgdl_representation=None):
     path = f'imgs/{name}_{file_index}.png'
 
     plt.savefig(path)
-    # print(f"✅ 截图已保存: {path}")
+    print(f" 截图已保存: {path}")
 
 
 # **VGDL 转换成简单图像**
