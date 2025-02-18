@@ -6,31 +6,9 @@ import numpy as np
 import re
 import pygame
 import matplotlib.pyplot as plt
-
-# **封装LLM**
-class LLMClient:
-    def __init__(self, model_name="default"):
-        self.model_name = model_name
-
-    def query(self, prompt):
-        if self.model_name == "deepseek":
-            from deepseek_api import DeepSeekAPI
-            api = DeepSeekAPI(api_key=os.getenv("DEEPSEEK_API_KEY"))
-            response = api.generate(prompt)
-        elif self.model_name == "qwen":
-            from qwen_api import QwenAPI
-            api = QwenAPI(api_key=os.getenv("QWEN_API_KEY"))
-            response = api.generate(prompt)
-        elif self.model_name == "claude":
-            from claude_api import ClaudeAPI
-            api = ClaudeAPI(api_key=os.getenv("CLAUDE_API_KEY"))
-            response = api.generate(prompt)
-        else:
-            raise ValueError(f"Unsupported model: {self.model_name}")
-
-
-        return response["text"]
-
+from llm.client import LLMClient
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import time
 # **显示当前状态**
 def show_state(env, step, name, info, vgdl_representation=None):
     plt.figure(3)
@@ -168,28 +146,29 @@ print("可用动作:", action_mapping)
 # 记录历史奖励
 past_rewards = []
 
-def query_llm(vgdl_rules, state_text, available_actions, action_mapping, reward):
-    past_rewards.append(reward)  # 记录奖励
-    recent_rewards = past_rewards[-5:]  # 仅保留最近 5 个奖励
+
+def query_llm_parallel(vgdl_rules, state_text, available_actions, action_mapping, reward):
+    past_rewards.append(reward)
+    recent_rewards = past_rewards[-5:]
 
     action_descriptions = "\n".join([f"{i}: {desc}" for i, desc in action_mapping.items()])
     reward_history = ", ".join(map(str, recent_rewards))
 
-    prompt = f"""
+    prompt_template = """
     You are a player in this game, and your goal is to win. 
     The game is fully playable, and you must follow the given rules step by step to achieve victory.
 
     ### **Game Rules (VGDL Format)**
-    {vgdl_rules}
+    {rules}
 
     ### **Current Game State**
-    {state_text}
+    {state}
 
     ### **Available Actions**
-    {action_descriptions}
+    {actions}
 
     ### **Recent Rewards**
-    {reward_history}
+    {rewards}
 
     The game follows these rules, and "A" represents the player character.
     Based on the game state and recent rewards, please determine the **best next action** for "A" that will help achieve the **winning condition**.
@@ -197,27 +176,67 @@ def query_llm(vgdl_rules, state_text, available_actions, action_mapping, reward)
     **Only return a single integer representing the action (without any extra text).**
     """
 
-    response = openai.ChatCompletion.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "system", "content": "You are an AI game-playing agent."},
-                  {"role": "user", "content": prompt.strip()}],
-        temperature=0,
-        max_tokens=10
-    )
+    # 准备并行请求
+    def generate_action(client: LLMClient, model_name: str):
+        try:
+            start_time = time.time()
+            response = client.query(prompt_template.format(
+                rules=vgdl_rules,
+                state=state_text,
+                actions=action_descriptions,
+                rewards=reward_history
+            ))
+            elapsed = time.time() - start_time
 
-    response_text = response["choices"][0]["message"]["content"].strip()
-    print("LLM Response:", response_text)
+            match = re.search(r"\d+", response)
+            if match:
+                action = int(match.group(0))
+                valid = action in available_actions
+                print(
+                    f"[{model_name.upper()}] 响应时间: {elapsed:.2f}s | 动作: {action} ({'有效' if valid else '无效'})")
+                return action if valid else None
+            return None
+        except Exception as e:
+            print(f"[{model_name.upper()}] 请求失败: {str(e)}")
+            return None
 
-    match = re.search(r"\d+", response_text)
-    if match:
-        action = int(match.group(0))
-        if action not in available_actions:
-            print(f"⚠️ 无效动作 {action}，默认执行 0")
-            return 0
-        return action
-    else:
-        print("⚠️ LLM 生成了无效动作，默认 action = 0")
+    # 初始化客户端（假设已配置好.env）
+    clients = [
+        ("deepseek", LLMClient("deepseek")),
+        ("openai", LLMClient("openai"))
+    ]
+
+    # 并行执行请求
+    valid_actions = []
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        futures = {
+            executor.submit(generate_action, client, name): name
+            for name, client in clients
+        }
+
+        for future in as_completed(futures, timeout=5):
+            model_name = futures[future]
+            try:
+                result = future.result()
+                if result is not None:
+                    valid_actions.append(result)
+            except Exception as e:
+                print(f"[{model_name.upper()}] 请求异常: {str(e)}")
+
+    # 决策策略（优先选择共同建议，否则随机选择有效动作）
+    if len(valid_actions) == 0:
+        print("⚠️ 所有模型请求失败，默认执行动作 0")
         return 0
+
+    # 统计动作出现频率
+    action_counts = {}
+    for action in valid_actions:
+        action_counts[action] = action_counts.get(action, 0) + 1
+
+    # 选择最高频的有效动作
+    best_action = max(action_counts.items(), key=lambda x: x[1])[0]
+    print(f"最终选择动作: {best_action} (得票数: {action_counts[best_action]}/2)")
+    return best_action
 
 
 
@@ -236,7 +255,7 @@ while not done:
     print("当前游戏状态:")
     print(vgdl_representation)
 
-    action = query_llm(vgdl_rules, vgdl_representation, available_actions, action_mapping, reward)
+    action = query_llm_parallel(vgdl_rules, vgdl_representation, available_actions, action_mapping, reward)
     print(f"LLM 选择的动作: {action} ({action_mapping.get(action, '未知动作')})")
 
     # **执行动作，获取新的状态和奖励**
