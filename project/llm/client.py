@@ -28,7 +28,7 @@ class LLMClient:
             "openai": {
                 "env_var": "OPENAI_API_KEY",
                 "base_url": "https://api.openai.com/v1/chat/completions",
-                "default_model": "gpt-4o",
+                "default_model": "gpt-4o-mini",
                 "headers": lambda key: {"Authorization": f"Bearer {key}"},
                 "payload": {
                     "temperature": 0,
@@ -41,7 +41,7 @@ class LLMClient:
                 "default_model": "deepseek-chat",
                 "headers": lambda key: {"Authorization": f"Bearer {key}"},
                 "payload": {
-                    "temperature": 0.7,
+                    "temperature": 0,
                     "max_tokens": 2000,
                     "top_p": 1.0
                 }
