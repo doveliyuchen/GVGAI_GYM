@@ -92,7 +92,7 @@ class EnhancedRewardSystem:
     效能分析:
     {chr(10).join(f'- 动作{a}: 平均奖励{avg:.2f} (尝试次数{count})'
                   for a, (avg, count) in action_stats.items())}
-    建议尝试新动作组合或检查规则合规性
+    建议尝试新动作组合或检查规则合规性，注意reward会有一定的延迟，并且只有动作1能获得reward，但是组合动作2,3（改变位置）然后再释放动作1会更有概率获得reward。
     """
 
     def _performance_summary(self) -> str:
