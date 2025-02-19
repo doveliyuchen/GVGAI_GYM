@@ -7,7 +7,7 @@ import pygame
 import matplotlib.pyplot as plt
 from llm.client import LLMClient
 from collections import defaultdict, Counter
-from typing import Iterable
+from typing import Iterable, Tuple
 
 
 # 游戏状态可视化模块
@@ -42,13 +42,37 @@ def vgdl_to_image(vgdl_representation):
     return pygame.surfarray.array3d(surface)
 
 
-# 正确代码
+class ReflectionManager:
+    def __init__(self, max_history=3):
+        self.history = []
+        self.max_history = max_history
+
+    def add_reflection(self, reflection: str):
+        """Added a reflection to the history"""
+        if reflection:
+            self.history.append(reflection)
+            if len(self.history) > self.max_history:
+                self.history.pop(0)
+
+    def get_formatted_history(self) -> str:
+        """get the fomatted history"""
+        return "\n".join(f"[History reflection{i + 1}] {r}"
+                         for i, r in enumerate(self.history))
+
+
 def parse_vgdl_level(vgdl_level):
     max_width = max(len(row) for row in vgdl_level)
     padded_level = [row.ljust(max_width, ".") for row in vgdl_level]
-    return np.array([list(row) for row in padded_level])
 
+    # 添加avatar位置检测
+    avatar_pos = None
+    for y, row in enumerate(padded_level):
+        if 'A' in row:
+            x = row.index('A')
+            avatar_pos = (x, y)
+            break
 
+    return np.array([list(row) for row in padded_level]), avatar_pos  # 返回元组
 
 
 # 增强奖励系统核心模块
@@ -59,11 +83,13 @@ class EnhancedRewardSystem:
         self.action_efficacy = defaultdict(list)
         self.consecutive_zero_threshold = 3
         self.window_size = window_size
+        self.total_reward = 0.0
 
     def update(self, action: int, reward: float):
         self.action_history.append(action)
         self.reward_history.append(reward)
         self.action_efficacy[action].append(reward)
+        self.total_reward += reward
 
         if len(self.action_history) > self.window_size:
             removed_action = self.action_history.pop(0)
@@ -77,7 +103,6 @@ class EnhancedRewardSystem:
         return self._performance_summary()
 
     def get_zero_streak(self) -> int:
-        """计算连续零奖励次数（修复版本）"""
         return next(
             (i for i, r in enumerate(reversed(self.reward_history)) if r != 0),
             len(self.reward_history))
@@ -87,12 +112,18 @@ class EnhancedRewardSystem:
         action_stats = {a: (np.mean(self.action_efficacy[a]), len(self.action_efficacy[a]))
                         for a in set(recent_actions)}
         return f"""
-    [系统警告] 连续{self.get_zero_streak()}次零奖励
-    最近动作序列: {recent_actions}
-    效能分析:
-    {chr(10).join(f'- 动作{a}: 平均奖励{avg:.2f} (尝试次数{count})'
+   Zero reward for {self.get_zero_streak()} consecutive times.
+    Recent action sequence: {recent_actions}
+    Performance analysis:
+    {chr(10).join(f'- Action {a}: Average reward {avg:.2f} (Attempt count {count})'
                   for a, (avg, count) in action_stats.items())}
-    建议尝试新动作组合或检查规则合规性，注意reward会有一定的延迟，并且只有动作1能获得reward，但是组合动作2,3（改变位置）然后再释放动作1会更有概率获得reward。
+    It is recommended to try new action combinations or check rule compliance. 
+    Note that there may be a certain delay in rewards, and only Action 1 can yield rewards. 
+    Combining Actions 2 and 3 (changing position) before executing Action 1 will increase the probability of obtaining a reward.
+    Recommended strategy:
+
+    Avoid repetitive patterns
+    Get the reward
     """
 
     def _performance_summary(self) -> str:
@@ -104,66 +135,120 @@ class EnhancedRewardSystem:
     """
 
     # LLM交互模块
-def build_enhanced_prompt(vgdl_rules: str, state: str,
-                          action_map: dict, reward_system: EnhancedRewardSystem) -> str:
-    base = f'''你正在控制游戏角色，请根据以下信息决策action, 并只返回action index：
 
-    游戏规则：
+
+def build_enhanced_prompt(vgdl_rules: str,
+                          state: str,
+                          action_map: dict,
+                          reward_system: EnhancedRewardSystem,
+                          reflection_mgr: ReflectionManager) -> str:
+    """Build English prompt with layout and reflection history"""
+    # 获取最近一次动作
+    last_action = None
+    last_reward = None
+    if reward_system.action_history:
+        last_action = reward_system.action_history[-1]
+        last_reward = reward_system.reward_history[-1]
+    last_action_desc = action_map.get(last_action, "None") if last_action is not None else "None"
+    last_reward_desc = action_map.get(last_reward, "None") if last_reward is not None else "None"
+    base = f'''
+    You are controlling avatar A. Respond in this format:
+    Action: <action number>
+    Reflection: ```<your strategy reflection>```
+
+
+    === Game Rules ===
     {vgdl_rules}
 
-    当前状态：
+    === Current State ===
     {state}
 
-    可用动作：
+    === Last Action ===
+    {last_action} ({last_action_desc})
+
+    === Available Actions ===
     {chr(10).join(f'{k}: {v}' for k, v in action_map.items())}
     '''
-    return base + reward_system.generate_guidance()
+
+    reflection_section = ""
+    if reflection_mgr.history:
+        reflection_section = f"\n=== Reflection History ===\n{reflection_mgr.get_formatted_history()}"
+
+    # 添加射击提醒逻辑
+    reward_reminder = ""
+    if last_reward == 0 and last_action is not None:
+        reward_reminder = "\n* The reward may delay from the action, please analyse the rule and think about the strategy. "
+    elif last_action is None:
+        reward_reminder = "\n* The final goal is win the game."
+
+    guidance = f'''
+    {reward_system.generate_guidance()} 
+    * Critical Insight: Only some action may direct rewards
+    * Strategic Priority: 
+      1. Avoid using same action repeatedly
+    {reward_reminder}
+    '''
+
+    return f"{base}{reflection_section}\n{guidance}"
 
 
-def query_llm(llm_client: LLMClient, vgdl_rules: str,
-              current_state: str, action_map: dict,
+def query_llm(llm_client: LLMClient,
+              vgdl_rules: str,
+              current_state: str,
+              action_map: dict,
               reward_system: EnhancedRewardSystem,
-              step: int) -> int:  # 添加step参数
-    prompt = build_enhanced_prompt(vgdl_rules, current_state, action_map, reward_system)
+              reflection_mgr: ReflectionManager,
+              step: int) -> Tuple[int, str]:
+
+    prompt = build_enhanced_prompt(vgdl_rules, current_state, action_map,
+                                   reward_system, reflection_mgr)
     try:
         response = llm_client.query(prompt)
-        numbers = [int(m.group()) for m in re.finditer(r'\d+', response)]
-        selected_action = next((n for n in numbers if n in action_map), 0)
 
-        # 新增动作选择显示
+
+        action_match = re.search(r"Action:\s*(\d+)", response)
+        reflection_match = re.search(r"Reflection:\s*```(.*?)```", response, re.DOTALL)
+
+        action = int(action_match.group(1)) if action_match else 0
+        reflection = reflection_match.group(1).strip() if reflection_match else ""
+
+        action = action if action in action_map else 0
+
         print(f"\n=== Step {step} ===")
-        print(f"Selected Action: {selected_action} ({action_map[selected_action]})")
-        print(f"Full Response: {response[:100]}...")  # 显示前100字符防止刷屏
+        print(f"Selected Action: {action} ({action_map.get(action, 'Unknown')})")
+        if reflection:
+            print(f"Strategy Reflection: {reflection[:200]}...")
 
-        return selected_action
+        return action, reflection
+
     except Exception as e:
-        print(f"LLM请求异常: {str(e)}")
-        return 0
+        print(f"LLM query error: {str(e)}")
+        return 0, ""
 
 
 
 
 
 def generate_report(system: EnhancedRewardSystem):
-    print(f"\n=== 游戏分析报告 ===")
-    print(f"总步数: {len(system.reward_history)}")
-    print(f"总奖励: {sum(system.reward_history)}")
-    print(f"最大零奖励连续步数: {system.get_zero_streak()}")
+    print(f"\n=== Game analysis ===")
+    print(f"Total steps: {len(system.reward_history)}")
+    print(f"Total reward: {sum(system.reward_history)}")
+    print(f"Zero Streak: {system.get_zero_streak()}")
 
     plt.figure(figsize=(12, 5))
     plt.subplot(121)
     plt.plot(system.reward_history)
-    plt.title("奖励变化趋势")
+    plt.title("Reward trend")
 
     plt.subplot(122)
     action_dist = Counter(system.action_history)
     plt.bar(action_dist.keys(), action_dist.values())
-    plt.title("动作分布")
+    plt.title("Action distribution")
     plt.savefig("game_analysis.png")
 
 if __name__ == "__main__":
 
-    env = gvgai.make("gvgai-aliens-lvl0-v0")
+    env = gvgai.make("gvgai-angelsdemons-lvl0-v0")
     state = env.reset()
     done = False
 
@@ -178,13 +263,13 @@ if __name__ == "__main__":
                               if f.endswith(".txt") and "lvl" in f), None)
 
     if not vgdl_rule_file or not level_layout_file:
-        raise FileNotFoundError("缺少游戏配置文件")
+        raise FileNotFoundError("No file detected")
 
     with open(vgdl_rule_file, "r") as f:
         vgdl_rules = f.read()
 
         # **转换 VGDL Level**
-    vgdl_grid = parse_vgdl_level(level_layout_file)
+    vgdl_grid, avatar_pos = parse_vgdl_level(level_layout_file)
     h, w = vgdl_grid.shape
     print("VGDL 关卡网格大小:", h, "x", w)
 
@@ -199,6 +284,7 @@ if __name__ == "__main__":
     # state = env.reset()
 
     llm_client = LLMClient("openai")
+    reflection_mgr = ReflectionManager()
     reward_system = EnhancedRewardSystem(env.action_space.n)
 
     try:
@@ -207,10 +293,9 @@ if __name__ == "__main__":
             try:
                 game_state = env.unwrapped.get_observation()
             except AttributeError:
-                game_state = "\n".join(["".join(row) for row in state[..., 0].astype(int).astype(str)])
+                game_state = parse_vgdl_level(level_layout_file)
 
-            action = query_llm(llm_client, vgdl_rules, game_state, action_mapping, reward_system,step_count)
-
+            action, reflection = query_llm(llm_client, vgdl_rules, game_state,action_mapping, reward_system,reflection_mgr, step_count)
             next_state, reward, done, _ = env.step(action)
             reward_system.update(action, reward)
 

@@ -28,7 +28,7 @@ class LLMClient:
             "openai": {
                 "env_var": "OPENAI_API_KEY",
                 "base_url": "https://api.openai.com/v1/chat/completions",
-                "default_model": "gpt-4o-mini",
+                "default_model": "gpt-4o-tubo",
                 "headers": lambda key: {"Authorization": f"Bearer {key}"},
                 "payload": {
                     "temperature": 0,
