@@ -112,26 +112,26 @@ class EnhancedRewardSystem:
         action_stats = {a: (np.mean(self.action_efficacy[a]), len(self.action_efficacy[a]))
                         for a in set(recent_actions)}
         return f"""
-   Zero reward for {self.get_zero_streak()} consecutive times.
+    Zero reward for {self.get_zero_streak()} consecutive times.
     Recent action sequence: {recent_actions}
     Performance analysis:
     {chr(10).join(f'- Action {a}: Average reward {avg:.2f} (Attempt count {count})'
                   for a, (avg, count) in action_stats.items())}
     It is recommended to try new action combinations or check rule compliance. 
-    Note that there may be a certain delay in rewards, and only Action 1 can yield rewards. 
-    Combining Actions 2 and 3 (changing position) before executing Action 1 will increase the probability of obtaining a reward.
-    Recommended strategy:
+    Note that there may be a certain delay in rewards. 
+    Combining multiple actions (changing positions) will increase the probability of obtaining a reward.
 
-    Avoid repetitive patterns
+    Avoid repetitive location
     Get the reward
+    The final goal is win the game
     """
 
     def _performance_summary(self) -> str:
         top_actions = sorted([(a, np.mean(r)) for a, r in self.action_efficacy.items() if r],
                              key=lambda x: x[1], reverse=True)[:3]
         return f"""
-    [策略分析] 最佳动作:
-    {chr(10).join(f'- 动作{a}: 平均奖励{reward:.2f}' for a, reward in top_actions)}
+    Best action:
+    {chr(10).join(f'- action{a}: average reward{reward:.2f}' for a, reward in top_actions)}
     """
 
     # LLM交互模块
@@ -152,7 +152,9 @@ def build_enhanced_prompt(vgdl_rules: str,
     last_action_desc = action_map.get(last_action, "None") if last_action is not None else "None"
     last_reward_desc = action_map.get(last_reward, "None") if last_reward is not None else "None"
     base = f'''
-    You are controlling avatar A. Respond in this format:
+    You are controlling avatar A, try to win the game with actions and reflections to learn about the game. 
+    Goal: Try to understand the game by the game state and learn to play and win it.
+    Respond in this format:
     Action: <action number>
     Reflection: ```<your strategy reflection>```
 
@@ -161,6 +163,7 @@ def build_enhanced_prompt(vgdl_rules: str,
     {vgdl_rules}
 
     === Current State ===
+    Please find your location by locating the "input" and interact your avatar with other things. 
     {state}
 
     === Last Action ===
@@ -168,6 +171,9 @@ def build_enhanced_prompt(vgdl_rules: str,
 
     === Available Actions ===
     {chr(10).join(f'{k}: {v}' for k, v in action_map.items())}
+    
+    === Reward history ===
+    {last_reward} ({last_reward_desc})
     '''
 
     reflection_section = ""
@@ -183,9 +189,13 @@ def build_enhanced_prompt(vgdl_rules: str,
 
     guidance = f'''
     {reward_system.generate_guidance()} 
-    * Critical Insight: Only some action may direct rewards
+    * Critical Insight: Only some interactions (such as touch something or shoot something, based on the rule) may direct rewards
     * Strategic Priority: 
-      1. Avoid using same action repeatedly
+      1. Avoid being in the same locations
+      2. Go every direction once will result in staying in the same location
+      3. Try to steak on one direction to achieve one goal such as interacting with some objects
+      4. Even though the reward may related to the action, try to reflect the game state accociated with rewards, connect the action with the game state change.
+      5. Notice the avatar current position, and then make the meaningful action.
     {reward_reminder}
     '''
 
@@ -229,9 +239,9 @@ def query_llm(llm_client: LLMClient,
 
 
 
-def generate_report(system: EnhancedRewardSystem):
+def generate_report(system: EnhancedRewardSystem, step: int) -> str:
     print(f"\n=== Game analysis ===")
-    print(f"Total steps: {len(system.reward_history)}")
+    print(f"Total steps: {step}")
     print(f"Total reward: {sum(system.reward_history)}")
     print(f"Zero Streak: {system.get_zero_streak()}")
 
@@ -271,7 +281,7 @@ if __name__ == "__main__":
         # **转换 VGDL Level**
     vgdl_grid, avatar_pos = parse_vgdl_level(level_layout_file)
     h, w = vgdl_grid.shape
-    print("VGDL 关卡网格大小:", h, "x", w)
+    # print("VGDL 关卡网格大小:", h, "x", w)
 
     # 动作空间配置
     available_actions = list(range(env.action_space.n))
@@ -288,31 +298,34 @@ if __name__ == "__main__":
     reward_system = EnhancedRewardSystem(env.action_space.n)
 
     try:
+        total_reward = 0
         step_count = 0
+        info = None
         while not done:
-            try:
-                game_state = env.unwrapped.get_observation()
-            except AttributeError:
-                game_state = parse_vgdl_level(level_layout_file)
+            # try:
+            #     game_state = env.unwrapped.get_observation()
+            # except AttributeError:
+            game_state, _ = parse_vgdl_level(level_layout_file)
 
             action, reflection = query_llm(llm_client, vgdl_rules, game_state,action_mapping, reward_system,reflection_mgr, step_count)
-            next_state, reward, done, _ = env.step(action)
+            next_state, reward, done, info = env.step(action)
             reward_system.update(action, reward)
-
+            game_state = info["ascii"]
+            total_reward += reward
             print(f"Received Reward: {reward}")
-            if reward != 0:
-                print("Positive Reward Detected!")
-
-            if reward_system.get_zero_streak() >= 5:
-                print("Action Divergence")
+            # if reward >= 0:
+            #     print("Positive Reward Detected!")
+            #
+            # if reward_system.get_zero_streak() >= 5:
+            #     print("Action Divergence")
 
             show_state(env, step_count,  # 使用统一step计数
                        "enhanced_agent",
                        f"Reward: {reward} | Action: {action}",  # 标题添加动作信息
                        game_state)
 
-            state = next_state
+            # state = next_state
             step_count += 1  # 递增步骤计数器
     finally:
         env.close()
-        generate_report(reward_system)
+        generate_report(reward_system, step_count-1)
