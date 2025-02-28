@@ -98,9 +98,10 @@ class EnhancedRewardSystem:
             if self.action_efficacy[removed_action]:
                 self.action_efficacy[removed_action].pop(0)
 
+    # disable the zero streak function
     def generate_guidance(self) -> str:
-        if self.get_zero_streak() >= self.consecutive_zero_threshold:
-            return self._zero_reward_analysis()
+        # if self.get_zero_streak() >= self.consecutive_zero_threshold:
+        #     return self._zero_reward_analysis()
         return self._performance_summary()
 
     def get_zero_streak(self) -> int:
@@ -156,7 +157,6 @@ def build_enhanced_prompt(vgdl_rules: str,
     You are controlling avatar A, try to win the game with actions and reflections to learn about the game. 
     Goal: Try to understand the game by the game state and learn to play and win it.
     Respond in this format:
-    Image: <img description>
     Action: <action number>
     Reflection: ```<your strategy reflection>```
 
@@ -165,37 +165,38 @@ def build_enhanced_prompt(vgdl_rules: str,
     {vgdl_rules}
 
     === Current State ===
-    Please find your location by locating the "input" and interact your avatar with other things. 
+    You are "input"
     {state}
-    The image is also attached, but it is the last step's state. 
+    The image is also attached as the current state of the game. 
     
     === Last Action ===
     {last_action} ({last_action_desc})
 
     === Available Actions ===
     {chr(10).join(f'{k}: {v}' for k, v in action_map.items())}
-
-    === Reward history ===
-    {last_reward} ({last_reward_desc})
     '''
+
+    # === Reward history ===
+    # {last_reward} ({last_reward_desc})
+    # '''
 
     reflection_section = ""
     if reflection_mgr.history:
         reflection_section = f"\n=== Reflection History ===\n{reflection_mgr.get_formatted_history()}"
 
     # 添加射击提醒逻辑
-    reward_reminder = ""
-    if last_reward == 0 and last_action is not None:
-        reward_reminder = "\n* The reward may delay from the action, please analyse the rule and think about the strategy. "
-    elif last_action is None:
-        reward_reminder = "\n* The final goal is win the game."
+    # reward_reminder = ""
+    # if last_reward == 0 and last_action is not None:
+    #     reward_reminder = "\n* The reward may delay from the action, please analyse the rule and think about the strategy. "
+    # elif last_action is None:
+    #     reward_reminder = "\n* The final goal is win the game."
 
+    # f'''
+    # {reward_system.generate_guidance()} //disable the guidance (zero streak and action average reward)
+    #     {reward_reminder}
     guidance = f'''
-    {reward_system.generate_guidance()} 
-    * Critical Insight: Only some interactions (such as touch something or shoot something, based on the rule) may direct rewards
     * Strategic Priority: 
      Please generate your own strategic priorities and formatted in reflections. 
-    {reward_reminder}
     '''
 
     return f"{base}{reflection_section}\n{guidance}"
@@ -228,7 +229,7 @@ def query_llm(llm_client: LLMClient,
         print(f"Selected Action: {action} ({action_map.get(action, 'Unknown')})")
         # print(response)
         if reflection:
-            print(f"Strategy Reflection: {reflection[:500]}...")
+            print(f"Strategy Reflection: {reflection[:700]}...")
 
         return action, reflection
 
@@ -240,7 +241,7 @@ def query_llm(llm_client: LLMClient,
 def generate_report(system: EnhancedRewardSystem, step: int) -> str:
     print(f"\n=== Game analysis ===")
     print(f"Total steps: {step}")
-    print(f"Total reward: {sum(system.reward_history)}")
+    print(f"Total reward: {system.total_reward}")
     print(f"Zero Streak: {system.get_zero_streak()}")
 
     plt.figure(figsize=(12, 5))
@@ -292,7 +293,7 @@ if __name__ == "__main__":
     # env = gvgai.make("gvgai-aliens-lvl0-v0")
     # state = env.reset()
 
-    llm_client = LLMClient("openai")
+    llm_client = LLMClient("deepseek")
     reflection_mgr = ReflectionManager()
     reward_system = EnhancedRewardSystem(env.action_space.n)
 
@@ -308,7 +309,7 @@ if __name__ == "__main__":
             game_state, _ = parse_vgdl_level(level_layout_file)
 
             action, reflection = query_llm(llm_client, vgdl_rules, game_state, action_mapping, reward_system,
-                                           reflection_mgr, step_count,image_path)
+                                           reflection_mgr, step_count)
             next_state, reward, done, info = env.step(action)
             reward_system.update(action, reward)
             game_state = info["ascii"]
@@ -320,7 +321,7 @@ if __name__ == "__main__":
             # if reward_system.get_zero_streak() >= 5:
             #     print("Action Divergence")
             # image_path
-            image_path = show_state(env, step_count,  # 使用统一step计数
+            show_state(env, step_count,  # 使用统一step计数
                        "enhanced_agent",
                        f"Reward: {reward} | Action: {action}",  # 标题添加动作信息
                        game_state)
