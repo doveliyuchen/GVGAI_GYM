@@ -165,7 +165,7 @@ def build_enhanced_prompt(vgdl_rules: str,
     {vgdl_rules}
 
     === Current State ===
-    You are "input"
+    You are "avatar"
     {state}
     The image is also attached as the current state of the game. 
     
@@ -184,7 +184,7 @@ def build_enhanced_prompt(vgdl_rules: str,
     if reflection_mgr.history:
         reflection_section = f"\n=== Reflection History ===\n{reflection_mgr.get_formatted_history()}"
 
-    # 添加射击提醒逻辑
+    # reward reminder to enhance the performance
     # reward_reminder = ""
     # if last_reward == 0 and last_action is not None:
     #     reward_reminder = "\n* The reward may delay from the action, please analyse the rule and think about the strategy. "
@@ -293,7 +293,7 @@ if __name__ == "__main__":
     # env = gvgai.make("gvgai-aliens-lvl0-v0")
     # state = env.reset()
 
-    llm_client = LLMClient("deepseek")
+    llm_client = LLMClient("qwen")
     reflection_mgr = ReflectionManager()
     reward_system = EnhancedRewardSystem(env.action_space.n)
 
@@ -313,6 +313,7 @@ if __name__ == "__main__":
             next_state, reward, done, info = env.step(action)
             reward_system.update(action, reward)
             game_state = info["ascii"]
+            # print(game_state)
             total_reward += reward
             print(f"Received Reward: {reward}")
             # if reward >= 0:

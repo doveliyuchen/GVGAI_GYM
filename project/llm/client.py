@@ -23,7 +23,7 @@ class LLMClient:
             "openai": {
                 "env_var": "OPENAI_API_KEY",
                 "base_url": "https://api.openai.com/v1",
-                "default_model": "gpt-4o",  # Updated for Vision API
+                "default_model": "gpt-4o-mini",  # Updated for Vision API
                 "headers": lambda key: {"Authorization": f"Bearer {key}"},
                 "payload": {
                     "temperature": 0,
@@ -44,7 +44,7 @@ class LLMClient:
             "qwen": {
                 "env_var": "QWEN_API_KEY",
                 "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",  # 兼容模式路径
-                "default_model": "qwen-omni-turbo",  # 使用官方示例中的模型名称
+                "default_model": "qwen-plus",  # 使用官方示例中的模型名称
                 "headers": lambda key: {"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
                 "payload": {
                     "temperature": 0,
@@ -53,12 +53,16 @@ class LLMClient:
             },
             "claude": {
                 "env_var": "CLAUDE_API_KEY",
-                "base_url": "https://api.anthropic.com/v1/complete",
-                "default_model": "claude-3-opus",
-                "headers": lambda key: {"x-api-key": key},
+                "base_url": "https://api.anthropic.com/v1",  # Updated base URL
+                "default_model": "claude-3-opus-20240229",  # Updated model name with version
+                "headers": lambda key: {
+                    "x-api-key": key,
+                    "anthropic-version": "2023-06-01",  # Required API version header
+                    "content-type": "application/json"
+                },
                 "payload": {
                     "temperature": 0,
-                    "max_tokens_to_sample": 1000
+                    "max_tokens": 1000
                 }
             }
         }
@@ -66,6 +70,7 @@ class LLMClient:
             raise ValueError(f"Unsupported model: {model_name}. Available options: {list(self.model_configs.keys())}")
         self.model_name = model_name
         self.config = self.model_configs[model_name]
+        self.max_tokens = self.model_configs[model_name]["payload"]["max_tokens"]
         self.api_key = os.getenv(self.config["env_var"])
         if not self.api_key:
             raise ValueError(f"API key not found for {self.config['env_var']}, please check your .env file")
@@ -79,7 +84,7 @@ class LLMClient:
         try:
             if self.model_name == "deepseek":
                 return self._query_deepseek(prompt)
-            elif self.model_name in ["openai", "qwen"]:
+            elif self.model_name in ["openai", "qwen", "claude"]:  # Added claude to multi-modal models
                 return self._query_multi_modal(prompt, image_path)
             else:
                 return self._query_text_only(prompt)
@@ -89,30 +94,36 @@ class LLMClient:
 
     def _query_deepseek(self, prompt: str) -> str:
         """Handle DeepSeek queries (streaming with reasoning content)"""
-        try:
-            messages = [{"role": "user", "content": prompt}]
-            response = self.client.chat.completions.create(
-                model=self.config["default_model"],
-                messages=messages,
-                stream=True  # 启用流式输出
-            )
-            reasoning_content = ""
-            content = ""
-            for chunk in response:
-                delta = chunk.choices[0].delta
-                if hasattr(delta, "reasoning_content") and delta.reasoning_content:
-                    reasoning_content += delta.reasoning_content
-                elif hasattr(delta, "content") and delta.content:
-                    content += delta.content
-            # print("Reasoning Content:", reasoning_content)  # 打印推理内容（可选）
-            return content.strip()
-        except Exception as e:
-            print(f"DeepSeek API 错误: {e}")
-            return ""
+        # try:
+        messages = [{"role": "user", "content": prompt}]
+        response = self.client.chat.completions.create(
+            model=self.config["default_model"],
+            messages=messages
+        )
+        reasoning_content = ""
+        # content = ""
+        # for chunk in response:
+        #     delta = chunk.choices[0].delta
+        #     if hasattr(delta, "reasoning_content") and delta.reasoning_content:
+        #         reasoning_content += delta.reasoning_content
+        #     elif hasattr(delta, "content") and delta.content:
+        #         content += delta.content
+        # print("Reasoning Content:", reasoning_content)  # 打印推理内容（可选）
+        return response.choices[0].message.content.strip()
+        # except Exception as e:
+        #     print(f"DeepSeek API 错误: {e}")
+        #     return ""
 
     def _query_multi_modal(self, prompt: str, image_path: Optional[str] = None) -> str:
         """Handle multi-modal queries (text + image)"""
         try:
+            # Handle Claude differently
+            if self.model_name == "claude" and image_path:
+                return self._query_claude_multimodal(prompt, image_path)
+            elif self.model_name == "claude":
+                # For text-only Claude queries
+                return self._query_claude_text(prompt)
+
             messages = []
             content = []
 
@@ -137,32 +148,122 @@ class LLMClient:
                 response = self.client.chat.completions.create(
                     model=self.config["default_model"],
                     messages=messages,
-                    max_tokens=self.config["max_token"]
+                    max_tokens=self.max_tokens
                 )
-                return response.choices[0].message.content.strip()
-
             elif self.model_name == "qwen":
-                completion = self.client.chat.completions.create(
+                if self.config["default_model"] == "qwen-omni-turbo":
+                    completion = self.client.chat.completions.create(
+                        model=self.config["default_model"],
+                        messages=messages,
+                        max_tokens=self.max_tokens,
+                        stream=True
+                    )
+                    result = ""
+                    for chunk in completion:
+                        if chunk.choices:
+                            delta = chunk.choices[0].delta
+                            if hasattr(delta, "content") and delta.content:  # 确保 content 非空
+                                result += delta.content
+                    return result
+
+                response = self.client.chat.completions.create(
                     model=self.config["default_model"],
                     messages=messages,
-                    stream=True,  # 启用流式输出
-                    max_tokens=self.config["max_token"]
-
+                    max_tokens=self.max_tokens
                 )
-                result = ""
-                for chunk in completion:
-                    if chunk.choices:
-                        delta = chunk.choices[0].delta
-                        if hasattr(delta, "content") and delta.content:  # 确保 content 非空
-                            result += delta.content
-                return result.strip()
+
+            return response.choices[0].message.content.strip()
 
         except Exception as e:
             print(f"{self.model_name.capitalize()} API 错误: {e}")
             return ""
 
+    def _query_claude_text(self, prompt: str) -> str:
+        """Handle Claude text-only queries"""
+        try:
+            payload = {
+                "model": self.config["default_model"],
+                "messages": [
+                    {"role": "user", "content": prompt}
+                ],
+                "max_tokens": self.max_tokens,
+                "temperature": self.config["payload"]["temperature"]
+            }
+
+            response = requests.post(
+                f"{self.config['base_url']}/messages",
+                headers=self.config["headers"](self.api_key),
+                json=payload
+            )
+            response.raise_for_status()
+            result = response.json()
+            return result.get("content", [{}])[0].get("text", "").strip()
+
+        except Exception as e:
+            print(f"Claude Text API Error: {e}")
+            if 'response' in locals() and hasattr(response, 'text'):
+                print(f"Response: {response.text}")
+            return ""
+
+    def _query_claude_multimodal(self, prompt: str, image_path: Optional[str] = None) -> str:
+        """Handle Claude multimodal queries using the messages API"""
+        response = None  # Initialize response to avoid reference before assignment
+        try:
+            # Prepare content list
+            content = []
+
+            # Add text
+            if prompt:
+                content.append({"type": "text", "text": prompt})
+
+            # Add image if provided
+            if image_path:
+                with open(image_path, "rb") as image_file:
+                    base64_image = base64.b64encode(image_file.read()).decode("utf-8")
+
+                # Get file extension from path
+                file_extension = Path(image_path).suffix.lstrip('.')
+                if file_extension.lower() not in ['jpg', 'jpeg', 'png', 'gif', 'webp']:
+                    file_extension = 'jpeg'  # Default to jpeg
+
+                content.append({
+                    "type": "image",
+                    "source": {
+                        "type": "base64",
+                        "media_type": f"image/{file_extension}",
+                        "data": base64_image
+                    }
+                })
+
+            # Construct the complete payload
+            payload = {
+                "model": self.config["default_model"],
+                "messages": [
+                    {"role": "user", "content": content}
+                ],
+                "max_tokens": self.max_tokens,
+                "temperature": self.config["payload"]["temperature"]
+            }
+
+            # Make the API request directly
+            response = requests.post(
+                f"{self.config['base_url']}/messages",
+                headers=self.config["headers"](self.api_key),
+                json=payload
+            )
+            response.raise_for_status()
+            result = response.json()
+            return result.get("content", [{}])[0].get("text", "").strip()
+
+        except Exception as e:
+            print(f"Claude Multimodal API Error: {e}")
+            if response is not None and hasattr(response, 'text'):
+                print(f"Response: {response.text}")
+            return ""
+
     def _query_text_only(self, prompt: str) -> str:
         """Handle text-only queries"""
+        response = None  # Initialize to avoid reference before assignment
         try:
             payload = self._build_payload(prompt)
             response = requests.post(
@@ -175,7 +276,7 @@ class LLMClient:
             return self._parse_response(response.json())
         except requests.exceptions.RequestException as e:
             print(f"API request failed: {str(e)}")
-            print("Response Data:", response.text if 'response' in locals() else "No response received.")
+            print("Response Data:", response.text if response is not None else "No response received.")
             return ""
         except KeyError as e:
             print(f"Response parsing failed: {str(e)}")
@@ -198,36 +299,46 @@ class LLMClient:
                     "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}
                 })
             payload["messages"] = messages
-        elif self.model_name in ["qwen", "claude"]:
+        elif self.model_name == "qwen":
             payload["model"] = self.config["default_model"]
             payload["prompt"] = prompt
+        elif self.model_name == "claude":
+            # For legacy endpoint that might be used elsewhere
+            payload["model"] = self.config["default_model"]
+            payload["messages"] = [{"role": "user", "content": [{"type": "text", "text": prompt}]}]
         return payload
 
     def _parse_response(self, response: Dict) -> str:
         """Parse response from different models"""
         if self.model_name == "deepseek":
-            try:
-                return response.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
-            except (KeyError, IndexError):
-                print("Response parsing failed: Unexpected response format.")
-                return ""
+        # try:
+            return response.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
+        # except (KeyError, IndexError):
+        #     print("Response parsing failed: Unexpected response format.")
+        #     return ""
         elif self.model_name == "openai":
             return response["choices"][0]["message"]["content"].strip()
-        elif self.model_name in ["qwen", "claude"]:
+        elif self.model_name == "qwen":
             return response.get("output", {}).get("text", "").strip()
+        elif self.model_name == "claude":
+            # Handle the updated Claude API response format
+            return response.get("content", [{}])[0].get("text", "").strip()
 
 
 if __name__ == "__main__":
     # 初始化客户端
-    client = LLMClient(model_name="deepseek")  # 或者 "openai" / "qwen"
+    llm_ls = ["openai", "deepseek", "claude", "qwen"]
+    for llm in llm_ls:
+
+        client = LLMClient(model_name='deepseek')  # 测试 Claude
 
     # 测试纯文本查询
-    text_prompt = "9.11 和 9.8，哪个更大？"
-    text_result = client.query(text_prompt)
-    print("Text Response:", text_result)
+        text_prompt = "9.11 和 9.8，哪个更大？"
+        text_result = client.query(text_prompt)
+        print("Text Response:", text_result)
 
-    # 测试多模态查询
-    image_path = "../game_frames/VisionAgent_step0.png"  # 替换为你的图片路径
-    image_prompt = "这张图片的内容是什么？"
-    image_result = client.query(image_prompt, image_path=image_path)
-    print("Image Response:", image_result)
+        # 测试多模态查询
+        image_path = "../game_frames/VisionAgent_step0.png"  # 替换为你的图片路径
+        image_prompt = "这张图片的内容是什么？"
+        image_result = client.query(image_prompt, image_path=image_path)
+        print("Image Response:", image_result)
