@@ -8,6 +8,36 @@ import matplotlib.pyplot as plt
 from llm.client import LLMClient
 from collections import defaultdict, Counter
 from typing import Iterable, Tuple, Optional
+import imageio
+
+
+# def create_gif(image_list, gif_name):
+#     frames = []
+#     for image_name in image_list:
+#         frames.append(imageio.imread(image_name))
+#     # Save them as frames into a gif
+#     imageio.mimsave(gif_name, frames, 'GIF', duration=0.1)
+#     return
+#
+#
+# def img2gif():
+#     image_list = []
+#     for i in range(186):
+#         name = "imgs/game" + str(i) + ".png"
+#         image_list.append(name)
+#     gif_name = 'created_gif.gif'
+#     create_gif(image_list, gif_name)
+
+class show_state_gif():
+    def __init__(self):
+        self.frames = []
+    def __call__(self, env):
+        self.frames.append(env.render(mode='rgb_array'))
+
+    def save(self, game_name):
+        gif_name = game_name + '.gif'
+        imageio.mimsave(gif_name, self.frames, 'GIF', duration = 0.1)
+
 
 
 # 游戏状态可视化模块
@@ -302,6 +332,7 @@ if __name__ == "__main__":
         step_count = 0
         info = None
         image_path = None
+        img = show_state_gif()
         while not done:
             # try:
             #     game_state = env.unwrapped.get_observation()
@@ -326,9 +357,12 @@ if __name__ == "__main__":
                        "enhanced_agent",
                        f"Reward: {reward} | Action: {action}",  # 标题添加动作信息
                        game_state)
+            img(env)
             # print(image_path)
             # state = next_state
             step_count += 1  # 递增步骤计数器
     finally:
         env.close()
+        img.save(game_name)
+        # img2gif()
         generate_report(reward_system, step_count - 1)

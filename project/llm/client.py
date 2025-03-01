@@ -44,7 +44,7 @@ class LLMClient:
             "qwen": {
                 "env_var": "QWEN_API_KEY",
                 "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",  # 兼容模式路径
-                "default_model": "qwen-plus",  # 使用官方示例中的模型名称
+                "default_model": "qwen-max",  # 使用官方示例中的模型名称
                 "headers": lambda key: {"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
                 "payload": {
                     "temperature": 0,
