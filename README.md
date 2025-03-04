@@ -37,7 +37,7 @@ Follow the step-by-step [guidelines](https://github.com/SUSTechGameAI/GVGAI_GYM/
 
 ---
 
-# Resources
+## Resources
 
 [GVGAI website](http://www.gvgai.net)
 
@@ -50,7 +50,7 @@ Follow the step-by-step [guidelines](https://github.com/SUSTechGameAI/GVGAI_GYM/
 [*Deep Reinforcement Learning for General Video Game AI*](https://arxiv.org/abs/1806.02448) published at IEEE CIG2018
 
 ---
-# References
+## References
 
 1. [G. Brockman, V. Cheung, L. Pettersson, J. Schneider, J. Schulman, J. Tang, and W. Zaremba, “Openai gym,” 2016.](https://github.com/openai/gym)
 2. [A. Hill, A. Raffin, M. Ernestus, A. Gleave, A. Kanervisto, R. Traore, P. Dhariwal, C. Hesse, O. Klimov, A. Nichol, M. Plappert, A. Radford, J. Schulman, S. Sidor, and Y. Wu, “Stable baselines,” https://github.com/hill-a/stable-baselines, 2018.](https://github.com/hill-a/stable-baselines)
