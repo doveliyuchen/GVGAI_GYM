@@ -11,6 +11,30 @@ from typing import Iterable, Tuple, Optional
 import imageio
 
 
+def create_directory(base_dir='imgs'):
+    """
+    创建目录，并在目录已存在时生成新的目录名（如 imgs_1, imgs_2 等）。
+
+    参数:
+        base_dir (str): 基础目录名，默认为 'imgs'。
+
+    返回:
+        str: 最终创建的目录路径。
+    """
+    if os.path.exists(base_dir):
+        # 如果目录已存在，生成新的目录名
+        index = 1
+        while True:
+            new_dir = f"{base_dir}_{index}"  # 构造新目录名，例如 imgs_1, imgs_2, ...
+            if not os.path.exists(new_dir):  # 检查新目录名是否可用
+                base_dir = new_dir
+                break
+            index += 1
+
+    # 创建目录
+    os.makedirs(base_dir, exist_ok=True)
+    return base_dir
+
 def create_gif(image_list, gif_name):
     frames = []
     for image_name in image_list:
@@ -42,9 +66,22 @@ class show_state_gif():
         imageio.mimsave(gif_name, self.frames, 'GIF', duration = 0.1)
 
 
+def show_state(env, step, name, info, directory, vgdl_representation=None):
+    """
+    渲染环境状态并保存为图像文件。
 
-# 游戏状态可视化模块
-def show_state(env, step, name, info, vgdl_representation=None):
+    参数:
+        env: 环境对象，用于渲染图像。
+        step (int): 当前步骤。
+        name (str): 图像名称。
+        info (str): 额外信息，显示在标题中。
+        directory (str): 保存图像的目标目录。
+        vgdl_representation: 可选参数，用于替代渲染逻辑。
+
+    返回:
+        str: 保存的图像文件路径；如果保存失败，则返回 None。
+    """
+    # 渲染图像
     plt.figure(3)
     plt.clf()
     try:
@@ -57,13 +94,16 @@ def show_state(env, step, name, info, vgdl_representation=None):
         else:
             plt.text(0.5, 0.5, "无法获取图像", fontsize=14, ha='center')
 
+    # 设置标题和坐标轴
     plt.title(f"{name} | Step: {step} {info}")
     plt.axis("off")
-    os.makedirs('imgs', exist_ok=True)
-    path = f'imgs/{name}_{len(os.listdir("imgs")) + 1}.png'
-    plt.savefig(path)
-    return path if os.path.exists(path) else None
 
+    # 保存图像到指定目录中
+    path = f'{directory}/{name}_{len(os.listdir(directory)) + 1}.png'
+    plt.savefig(path)
+
+    # 返回路径（如果文件存在）
+    return path if os.path.exists(path) else None
 
 def vgdl_to_image(vgdl_representation):
     pygame.init()
@@ -179,7 +219,8 @@ def build_enhanced_prompt(vgdl_rules: str,
                           reward_system: EnhancedRewardSystem,
                           reflection_mgr: ReflectionManager,
                           current_image_path: Optional[str] = None,
-                          last_image_path: Optional[str] = None) -> str:
+                          last_image_path: Optional[str] = None,
+                          reflection = True ) -> str:
     """Build English prompt with layout and reflection history"""
 
     last_action = None
@@ -190,13 +231,21 @@ def build_enhanced_prompt(vgdl_rules: str,
     last_action_desc = action_map.get(last_action, "None") if last_action is not None else "None"
     last_reward_desc = action_map.get(last_reward, "None") if last_reward is not None else "None"
 
-    base = f'''
+    formating = f'''
     You are controlling avatar A, try to win the game with actions. 
     Goal: Try to interact with the game by analyzing the game state and learn to play and win it.
     Respond in this format:
-    Action: <action number>
-    Reflection: ```<your strategy reflection>```
+    Action: <action number>'''
 
+    reflection_format =  None
+    reflection_section = ""
+    if reflection:
+        reflection_format = ''' Reflection: ```<your strategy reflection>```  '''
+
+        if reflection_mgr.history:
+            reflection_section = f"\n=== Reflection History ===\n{reflection_mgr.get_formatted_history()}"
+
+    base =f'''
     === Game Rules ===
     {vgdl_rules}
 
@@ -219,10 +268,6 @@ def build_enhanced_prompt(vgdl_rules: str,
     {chr(10).join(f'{k}: {v}' for k, v in action_map.items())}
     '''
 
-    reflection_section = ""
-    if reflection_mgr.history:
-        reflection_section = f"\n=== Reflection History ===\n{reflection_mgr.get_formatted_history()}"
-
     guidance = f'''
     * Strategic Priority:
 
@@ -232,7 +277,7 @@ def build_enhanced_prompt(vgdl_rules: str,
     Reflect on these guidelines and formulate your own strategic priorities, presenting them in a clear and structured format.
         '''
 
-    return f"{base}{reflection_section}\n{guidance}"
+    return f"{formating}{reflection_format}{base}{reflection_section}\n{guidance}"
 
 
 def query_llm(llm_client: LLMClient,
@@ -244,9 +289,10 @@ def query_llm(llm_client: LLMClient,
               reflection_mgr: ReflectionManager,
               step: int,
               current_image_path: Optional[str] = None,
-              last_image_path: Optional[str] = None) -> Tuple[int, str]:
+              last_image_path: Optional[str] = None,
+              reflection = True) -> Tuple[int, str]:
     prompt = build_enhanced_prompt(vgdl_rules, current_state, last_state, action_map,
-                                   reward_system, reflection_mgr, current_image_path, last_image_path)
+                                   reward_system, reflection_mgr, current_image_path, last_image_path,reflection)
     try:
         response = llm_client.query(prompt, image_path=current_image_path)
 
@@ -336,6 +382,7 @@ if __name__ == "__main__":
         game_state = vgdl_grid
         last_state_img = None
         game_state_img = None
+        dir = create_directory()
         while not done:
             # try:
             #     game_state = env.unwrapped.get_observation()
@@ -343,7 +390,7 @@ if __name__ == "__main__":
 
 
             action, reflection = query_llm(llm_client, vgdl_rules,game_state, last_state, action_mapping, reward_system,
-                                           reflection_mgr, step_count, game_state_img, last_state_img)
+                                           reflection_mgr, step_count, game_state_img, last_state_img, reflection = False)
             next_state, reward, done, info = env.step(action)
             reward_system.update(action, reward)
             last_state = game_state
@@ -357,13 +404,13 @@ if __name__ == "__main__":
 
             game_state_img= show_state(env, step_count,
                        "enhanced_agent",
-                       f"Reward: {reward} | Action: {action}",
+                       f"Reward: {reward} | Action: {action}",dir,
                        game_state)
             img(env)
 
             step_count += 1
     finally:
         env.close()
-        img.save(game_name)
+        img.save(dir+game_name)
 
         generate_report(reward_system, step_count - 1)
