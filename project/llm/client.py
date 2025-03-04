@@ -32,8 +32,8 @@ class LLMClient:
             },
             "deepseek": {
                 "env_var": "DEEPSEEK_API_KEY",
-                "base_url": "https://api.deepseek.com",  # 根路径
-                "default_model": "deepseek-reasoner",  # 使用官方示例中的模型名称
+                "base_url": "https://api.deepseek.com",
+                "default_model": "deepseek-reasoner",
                 "headers": lambda key: {"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
                 "payload": {
                     "temperature": 0,
@@ -43,8 +43,8 @@ class LLMClient:
             },
             "qwen": {
                 "env_var": "QWEN_API_KEY",
-                "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",  # 兼容模式路径
-                "default_model": "qwen-max",  # 使用官方示例中的模型名称
+                "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+                "default_model": "qwen-plus",
                 "headers": lambda key: {"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
                 "payload": {
                     "temperature": 0,
