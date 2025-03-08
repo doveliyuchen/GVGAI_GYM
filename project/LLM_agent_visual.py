@@ -13,20 +13,20 @@ import imageio
 
 def create_directory(base_dir='imgs'):
     """
-    创建目录，并在目录已存在时生成新的目录名（如 imgs_1, imgs_2 等）。
+    Create a directory, and generate a new directory name (e.g., imgs_1, imgs_2, etc.) if the directory already exists.
 
-    参数:
-        base_dir (str): 基础目录名，默认为 'imgs'。
+    Args:
+        base_dir (str): The base directory name, default is 'imgs'.
 
-    返回:
-        str: 最终创建的目录路径。
+    Returns:
+        str: The final created directory path.
     """
     if os.path.exists(base_dir):
         # 如果目录已存在，生成新的目录名
         index = 1
         while True:
-            new_dir = f"{base_dir}_{index}"  # 构造新目录名，例如 imgs_1, imgs_2, ...
-            if not os.path.exists(new_dir):  # 检查新目录名是否可用
+            new_dir = f"{base_dir}_{index}"
+            if not os.path.exists(new_dir):
                 base_dir = new_dir
                 break
             index += 1
@@ -68,20 +68,20 @@ class show_state_gif():
 
 def show_state(env, step, name, info, directory, vgdl_representation=None):
     """
-    渲染环境状态并保存为图像文件。
+    Render the environment state and save it as an image file.
 
-    参数:
-        env: 环境对象，用于渲染图像。
-        step (int): 当前步骤。
-        name (str): 图像名称。
-        info (str): 额外信息，显示在标题中。
-        directory (str): 保存图像的目标目录。
-        vgdl_representation: 可选参数，用于替代渲染逻辑。
+    Args:
+        env: Environment object used to render the image.
+        step (int): Current step.
+        name (str): Image name.
+        info (str): Additional information to display in the title.
+        directory (str): Target directory to save the image.
+        vgdl_representation: Optional parameter to override the rendering logic.
 
-    返回:
-        str: 保存的图像文件路径；如果保存失败，则返回 None。
+    Returns:
+        str: The file path of the saved image; returns None if saving fails.
     """
-    # 渲染图像
+    # Render the image
     plt.figure(3)
     plt.clf()
     try:
@@ -92,17 +92,17 @@ def show_state(env, step, name, info, directory, vgdl_representation=None):
             img = vgdl_to_image(vgdl_representation)
             plt.imshow(img)
         else:
-            plt.text(0.5, 0.5, "无法获取图像", fontsize=14, ha='center')
+            plt.text(0.5, 0.5, "No image", fontsize=14, ha='center')
 
-    # 设置标题和坐标轴
+
     plt.title(f"{name} | Step: {step} {info}")
     plt.axis("off")
 
-    # 保存图像到指定目录中
+
     path = f'{directory}/{name}_{len(os.listdir(directory)) + 1}.png'
     plt.savefig(path)
 
-    # 返回路径（如果文件存在）
+
     return path if os.path.exists(path) else None
 
 def vgdl_to_image(vgdl_representation):
@@ -138,7 +138,6 @@ def parse_vgdl_level(vgdl_level):
     max_width = max(len(row) for row in vgdl_level)
     padded_level = [row.ljust(max_width, ".") for row in vgdl_level]
 
-    # 添加avatar位置检测
     avatar_pos = None
     for y, row in enumerate(padded_level):
         if 'A' in row:
@@ -220,7 +219,7 @@ def build_enhanced_prompt(vgdl_rules: str,
                           reflection_mgr: ReflectionManager,
                           current_image_path: Optional[str] = None,
                           last_image_path: Optional[str] = None,
-                          reflection = True ) -> str:
+                          reflection = True, reward = False ) -> str:
     """Build English prompt with layout and reflection history"""
 
     last_action = None
@@ -268,6 +267,14 @@ def build_enhanced_prompt(vgdl_rules: str,
     {chr(10).join(f'{k}: {v}' for k, v in action_map.items())}
     '''
 
+    if reward:
+        reward_prompt = f'''
+         === Last Reward ===
+         {last_reward} ({last_reward_desc})
+        '''
+    else:
+        reward_prompt = ''
+
     guidance = f'''
     * Strategic Priority:
 
@@ -277,7 +284,7 @@ def build_enhanced_prompt(vgdl_rules: str,
     Reflect on these guidelines and formulate your own strategic priorities, presenting them in a clear and structured format.
         '''
 
-    return f"{formating}{reflection_format}{base}{reflection_section}\n{guidance}"
+    return f"{formating}{reflection_format}{base}{reward_prompt}{reflection_section}\n{guidance}"
 
 
 def query_llm(llm_client: LLMClient,
@@ -290,9 +297,10 @@ def query_llm(llm_client: LLMClient,
               step: int,
               current_image_path: Optional[str] = None,
               last_image_path: Optional[str] = None,
-              reflection = True) -> Tuple[int, str]:
+              reflection = True,
+              reward = False) -> Tuple[int, str]:
     prompt = build_enhanced_prompt(vgdl_rules, current_state, last_state, action_map,
-                                   reward_system, reflection_mgr, current_image_path, last_image_path,reflection)
+                                   reward_system, reflection_mgr, current_image_path, last_image_path,reflection,reward)
     try:
         response = llm_client.query(prompt, image_path=current_image_path)
 
@@ -335,82 +343,90 @@ def generate_report(system: EnhancedRewardSystem, step: int) -> str:
 
 
 if __name__ == "__main__":
-
-    env = gvgai.make("gvgai-assemblyline-lvl0-v0")
-    state = env.reset()
-    done = False
-
-    # VGDL rule
-    game_name = env.spec.id.replace("gvgai-", "").split("-")[0] + "_v0"
     current_path = os.path.dirname(os.path.abspath(__file__))
-    game_dir = os.path.join(os.path.dirname(current_path), "gym_gvgai", "envs", "games", game_name)
-
-    vgdl_rule_file = next((os.path.join(game_dir, f) for f in os.listdir(game_dir)
-                           if f.endswith(".txt") and "lvl" not in f), None)
-    level_layout_file = next((os.path.join(game_dir, f) for f in os.listdir(game_dir)
-                              if f.endswith(".txt") and "lvl" in f), None)
-
-    if not vgdl_rule_file or not level_layout_file:
-        raise FileNotFoundError("No file detected")
-
-    with open(vgdl_rule_file, "r") as f:
-        vgdl_rules = f.read()
+    full_path = os.path.join(os.path.dirname(current_path), "gym_gvgai", "envs", "games")
+    llm_list = ["qwen","openai", "deepseek"]
+    for game in os.listdir(full_path):
+        env_name = "gvgai-"+game[:-3]+"-lvl0-v0"
 
 
-    vgdl_grid, avatar_pos = parse_vgdl_level(level_layout_file)
-    h, w = vgdl_grid.shape
+        env = gvgai.make(env_name)
+        state = env.reset()
+        done = False
 
-    available_actions = list(range(env.action_space.n))
-    try:
-        action_mapping = {i: env.unwrapped.get_action_meanings()[i] for i in available_actions}
-    except AttributeError:
-        action_mapping = {i: f"Action {i}" for i in available_actions}
+        # VGDL rule
+        game_name = env.spec.id.replace("gvgai-", "").split("-")[0] + "_v0"
+
+        game_dir = os.path.join(os.path.dirname(current_path), "gym_gvgai", "envs", "games", game_name)
+
+        vgdl_rule_file = next((os.path.join(game_dir, f) for f in os.listdir(game_dir)
+                               if f.endswith(".txt") and "lvl" not in f), None)
+        level_layout_file = next((os.path.join(game_dir, f) for f in os.listdir(game_dir)
+                                  if f.endswith(".txt") and "lvl" in f), None)
 
 
 
-    llm_client = LLMClient("openai")
-    reflection_mgr = ReflectionManager()
-    reward_system = EnhancedRewardSystem(env.action_space.n)
-
-    try:
-        total_reward = 0
-        step_count = 0
-        info = None
-        image_path = None
-        img = show_state_gif()
-        last_state = None
-        game_state = vgdl_grid
-        last_state_img = None
-        game_state_img = None
-        dir = create_directory()
-        while not done:
-            # try:
-            #     game_state = env.unwrapped.get_observation()
-            # except AttributeError:
+        with open(vgdl_rule_file, "r") as f:
+            vgdl_rules = f.read()
+        with open(level_layout_file, "r") as f:
+            level_layout = f.read()
 
 
-            action, reflection = query_llm(llm_client, vgdl_rules,game_state, last_state, action_mapping, reward_system,
-                                           reflection_mgr, step_count, game_state_img, last_state_img, reflection = False)
-            next_state, reward, done, info = env.step(action)
-            reward_system.update(action, reward)
-            last_state = game_state
-            game_state = info["ascii"]
+        vgdl_grid, avatar_pos = parse_vgdl_level(level_layout)
+        h, w = vgdl_grid.shape
+
+        available_actions = list(range(env.action_space.n))
+        try:
+            action_mapping = {i: env.unwrapped.get_action_meanings()[i] for i in available_actions}
+        except AttributeError:
+            action_mapping = {i: f"Action {i}" for i in available_actions}
 
 
-            total_reward += reward
-            print(f"Received Reward: {reward}")
+        for llm in llm_list:
 
-            last_state_img = game_state_img
+            llm_client = LLMClient(llm)
 
-            game_state_img= show_state(env, step_count,
-                       "enhanced_agent",
-                       f"Reward: {reward} | Action: {action}",dir,
-                       game_state)
-            img(env)
+            reflection_mgr = ReflectionManager()
+            reward_system = EnhancedRewardSystem(env.action_space.n)
 
-            step_count += 1
-    finally:
-        env.close()
-        img.save(dir+game_name)
+            try:
+                total_reward = 0
+                step_count = 0
+                info = None
+                image_path = None
+                img = show_state_gif()
+                last_state = None
+                game_state = vgdl_grid
+                last_state_img = None
+                game_state_img = None
+                dir = create_directory(game_name)
+                while not done:
 
-        generate_report(reward_system, step_count - 1)
+
+                    action, reflection = query_llm(llm_client, vgdl_rules,game_state, last_state, action_mapping, reward_system,
+                                                   reflection_mgr, step_count, game_state_img, last_state_img, reflection = False)
+                    next_state, reward, done, info = env.step(action)
+                    reward_system.update(action, reward)
+                    last_state = game_state
+                    game_state = info["ascii"]
+
+
+                    total_reward += reward
+                    print(f"Received Reward: {reward}")
+
+                    last_state_img = game_state_img
+
+                    game_state_img= show_state(env, step_count,
+                               "enhanced_agent",
+                               f"Reward: {reward} | Action: {action}",dir,
+                               game_state)
+                    img(env)
+                    winner = info['winner']
+                    step_count += 1
+            finally:
+
+                env.close()
+                img.save(game_name+llm)
+                with open("game_logs.txt", mode="a") as f:
+                    f.write(f"game_name: {game_name}, step_count: {step_count}, winner: {winner}, api: {llm}\n")
+                generate_report(reward_system, step_count - 1)
