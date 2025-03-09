@@ -35,25 +35,6 @@ def create_directory(base_dir='imgs'):
     os.makedirs(base_dir, exist_ok=True)
     return base_dir
 
-def create_gif(image_list, gif_name):
-    frames = []
-    for image_name in image_list:
-        frames.append(imageio.imread(image_name))
-    # Save them as frames into a gif
-    imageio.mimsave(gif_name, frames, 'GIF', duration=0.1)
-    return
-
-
-def img2gif():
-    image_list = []
-    try:
-        for i in range(186):
-            name = "imgs/game" + str(i) + ".png"
-            image_list.append(name)
-        gif_name = 'created_gif.gif'
-    except:
-        create_gif(image_list, gif_name)
-    create_gif(image_list, gif_name)
 
 class show_state_gif():
     def __init__(self):
@@ -145,17 +126,16 @@ def parse_vgdl_level(vgdl_level):
             avatar_pos = (x, y)
             break
 
-    return np.array([list(row) for row in padded_level]), avatar_pos  # 返回元组
+    return np.array([list(row) for row in padded_level]), avatar_pos 
 
 
-# 增强奖励系统核心模块
-class EnhancedRewardSystem:
-    def __init__(self, action_space_size: int, window_size=15):
+class RewardSystem:
+    def __init__(self):
         self.action_history = []
         self.reward_history = []
         self.action_efficacy = defaultdict(list)
         self.consecutive_zero_threshold = 3
-        self.window_size = window_size
+        # self.window_size = window_size
         self.total_reward = 0.0
 
     def update(self, action: int, reward: float):
@@ -164,11 +144,11 @@ class EnhancedRewardSystem:
         self.action_efficacy[action].append(reward)
         self.total_reward += reward
 
-        if len(self.action_history) > self.window_size:
-            removed_action = self.action_history.pop(0)
-            self.reward_history.pop(0)
-            if self.action_efficacy[removed_action]:
-                self.action_efficacy[removed_action].pop(0)
+        # if len(self.action_history) > self.window_size:
+        #     removed_action = self.action_history.pop(0)
+        #     self.reward_history.pop(0)
+        #     if self.action_efficacy[removed_action]:
+        #         self.action_efficacy[removed_action].pop(0)
 
     # disable the zero streak function
     def generate_guidance(self) -> str:
@@ -181,41 +161,41 @@ class EnhancedRewardSystem:
             (i for i, r in enumerate(reversed(self.reward_history)) if r != 0),
             len(self.reward_history))
 
-    def _zero_reward_analysis(self) -> str:
-        recent_actions = self.action_history[-self.consecutive_zero_threshold:]
-        action_stats = {a: (np.mean(self.action_efficacy[a]), len(self.action_efficacy[a]))
-                        for a in set(recent_actions)}
-        return f"""
-    Zero reward for {self.get_zero_streak()} consecutive times.
-    Recent action sequence: {recent_actions}
-    Performance analysis:
-    {chr(10).join(f'- Action {a}: Average reward {avg:.2f} (Attempt count {count})'
-                  for a, (avg, count) in action_stats.items())}
-    It is recommended to try new action combinations or check rule compliance. 
-    Note that there may be a certain delay in rewards. 
-    Combining multiple actions (changing positions) will increase the probability of obtaining a reward.
+    # def _zero_reward_analysis(self) -> str:
+    #     recent_actions = self.action_history[-self.consecutive_zero_threshold:]
+    #     action_stats = {a: (np.mean(self.action_efficacy[a]), len(self.action_efficacy[a]))
+    #                     for a in set(recent_actions)}
+    #     return f"""
+    # Zero reward for {self.get_zero_streak()} consecutive times.
+    # Recent action sequence: {recent_actions}
+    # Performance analysis:
+    # {chr(10).join(f'- Action {a}: Average reward {avg:.2f} (Attempt count {count})'
+    #               for a, (avg, count) in action_stats.items())}
+    # It is recommended to try new action combinations or check rule compliance. 
+    # Note that there may be a certain delay in rewards. 
+    # Combining multiple actions (changing positions) will increase the probability of obtaining a reward.
 
-    Avoid repetitive location
-    Get the reward
-    The final goal is win the game
-    """
+    # Avoid repetitive location
+    # Get the reward
+    # The final goal is win the game
+    # """
 
-    def _performance_summary(self) -> str:
-        top_actions = sorted([(a, np.mean(r)) for a, r in self.action_efficacy.items() if r],
-                             key=lambda x: x[1], reverse=True)[:3]
-        return f"""
-    Best action:
-    {chr(10).join(f'- action{a}: average reward{reward:.2f}' for a, reward in top_actions)}
-    """
+    # def _performance_summary(self) -> str:
+    #     top_actions = sorted([(a, np.mean(r)) for a, r in self.action_efficacy.items() if r],
+    #                          key=lambda x: x[1], reverse=True)[:3]
+    #     return f"""
+    # Best action:
+    # {chr(10).join(f'- action{a}: average reward{reward:.2f}' for a, reward in top_actions)}
+    # """
 
-    # LLM交互模块
+
 
 
 def build_enhanced_prompt(vgdl_rules: str,
                           state: str,
                           last_state: str,
                           action_map: dict,
-                          reward_system: EnhancedRewardSystem,
+                          reward_system: RewardSystem,
                           reflection_mgr: ReflectionManager,
                           current_image_path: Optional[str] = None,
                           last_image_path: Optional[str] = None,
@@ -292,7 +272,7 @@ def query_llm(llm_client: LLMClient,
               current_state: str,
               last_state: str,
               action_map: dict,
-              reward_system: EnhancedRewardSystem,
+              reward_system: RewardSystem,
               reflection_mgr: ReflectionManager,
               step: int,
               current_image_path: Optional[str] = None,
@@ -324,7 +304,7 @@ def query_llm(llm_client: LLMClient,
         return 0, " "
 
 
-def generate_report(system: EnhancedRewardSystem, step: int) -> str:
+def generate_report(system: RewardSystem, step: int, dir) -> str:
     print(f"\n=== Game analysis ===")
     print(f"Total steps: {step}")
     print(f"Total reward: {system.total_reward}")
@@ -339,16 +319,16 @@ def generate_report(system: EnhancedRewardSystem, step: int) -> str:
     action_dist = Counter(system.action_history)
     plt.bar(action_dist.keys(), action_dist.values())
     plt.title("Action distribution")
-    plt.savefig("game_analysis.png")
+    plt.savefig(dir+"game_analysis.png")
 
 
 if __name__ == "__main__":
     current_path = os.path.dirname(os.path.abspath(__file__))
     full_path = os.path.join(os.path.dirname(current_path), "gym_gvgai", "envs", "games")
     llm_list = ["qwen","openai", "deepseek"]
+
     for game in os.listdir(full_path):
         env_name = "gvgai-"+game[:-3]+"-lvl0-v0"
-
 
         env = gvgai.make(env_name)
         state = env.reset()
@@ -385,9 +365,9 @@ if __name__ == "__main__":
         for llm in llm_list:
 
             llm_client = LLMClient(llm)
-
+            state = env.reset()
             reflection_mgr = ReflectionManager()
-            reward_system = EnhancedRewardSystem(env.action_space.n)
+            reward_system = RewardSystem()
 
             try:
                 total_reward = 0
@@ -399,7 +379,7 @@ if __name__ == "__main__":
                 game_state = vgdl_grid
                 last_state_img = None
                 game_state_img = None
-                dir = create_directory(game_name)
+                dir = create_directory("imgs/"+game_name)
                 while not done:
 
 
@@ -423,10 +403,17 @@ if __name__ == "__main__":
                     img(env)
                     winner = info['winner']
                     step_count += 1
+
+
             finally:
 
                 env.close()
-                img.save(game_name+llm)
+                try:
+                    img.save(dir+"_"+llm)
+                except:
+                    print("cannot save")
                 with open("game_logs.txt", mode="a") as f:
                     f.write(f"game_name: {game_name}, step_count: {step_count}, winner: {winner}, api: {llm}\n")
-                generate_report(reward_system, step_count - 1)
+                generate_report(reward_system, step_count,dir+"_"+llm)
+
+
