@@ -366,6 +366,7 @@ if __name__ == "__main__":
 
             llm_client = LLMClient(llm)
             state = env.reset()
+            done = False
             reflection_mgr = ReflectionManager()
             reward_system = RewardSystem()
 
@@ -382,7 +383,10 @@ if __name__ == "__main__":
                 dir = create_directory("imgs/"+game_name)
                 while not done:
 
-
+                    if llm == "deepseek":
+                        last_state_img = None
+                        game_state_img = None
+                        
                     action, reflection = query_llm(llm_client, vgdl_rules,game_state, last_state, action_mapping, reward_system,
                                                    reflection_mgr, step_count, game_state_img, last_state_img, reflection = False)
                     next_state, reward, done, info = env.step(action)

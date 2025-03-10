@@ -33,12 +33,11 @@ class LLMClient:
             "deepseek": {
                 "env_var": "DEEPSEEK_API_KEY",
                 "base_url": "https://api.deepseek.com",
-                "default_model": "deepseek-reasoner",
+                "default_model": "deepseek-chat",
                 "headers": lambda key: {"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
                 "payload": {
                     "temperature": 0,
-                    "max_tokens": 2000,
-                    "top_p": 1.0
+                    "max_tokens": 1000,
                 }
             },
             "qwen": {
