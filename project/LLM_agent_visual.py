@@ -325,7 +325,7 @@ def generate_report(system: RewardSystem, step: int, dir) -> str:
 if __name__ == "__main__":
     current_path = os.path.dirname(os.path.abspath(__file__))
     full_path = os.path.join(os.path.dirname(current_path), "gym_gvgai", "envs", "games")
-    llm_list = ["qwen","openai", "deepseek"]
+    llm_list = ["qwen","openai"]
 
     for game in os.listdir(full_path):
         env_name = "gvgai-"+game[:-3]+"-lvl0-v0"
@@ -369,24 +369,21 @@ if __name__ == "__main__":
             done = False
             reflection_mgr = ReflectionManager()
             reward_system = RewardSystem()
+            total_reward = 0
+            step_count = 0
+            info = None
+            image_path = None
+            img = show_state_gif()
+            last_state = None
+            game_state = vgdl_grid
+            last_state_img = None
+            game_state_img = None
+            dir = create_directory("imgs/"+game_name)
 
             try:
-                total_reward = 0
-                step_count = 0
-                info = None
-                image_path = None
-                img = show_state_gif()
-                last_state = None
-                game_state = vgdl_grid
-                last_state_img = None
-                game_state_img = None
-                dir = create_directory("imgs/"+game_name)
+
                 while not done:
 
-                    if llm == "deepseek":
-                        last_state_img = None
-                        game_state_img = None
-                        
                     action, reflection = query_llm(llm_client, vgdl_rules,game_state, last_state, action_mapping, reward_system,
                                                    reflection_mgr, step_count, game_state_img, last_state_img, reflection = False)
                     next_state, reward, done, info = env.step(action)

@@ -11,41 +11,58 @@ from typing import Iterable, Tuple, Optional
 import imageio
 
 
-def create_gif(image_list, gif_name):
-    frames = []
-    for image_name in image_list:
-        frames.append(imageio.imread(image_name))
-    # Save them as frames into a gif
-    imageio.mimsave(gif_name, frames, 'GIF', duration=0.1)
-    return
+def create_directory(base_dir='imgs'):
+    """
+    Create a directory, and generate a new directory name (e.g., imgs_1, imgs_2, etc.) if the directory already exists.
 
+    Args:
+        base_dir (str): The base directory name, default is 'imgs'.
 
-def img2gif():
-    image_list = []
-    try:
-        for i in range(186):
-            name = "imgs/game" + str(i) + ".png"
-            image_list.append(name)
-        gif_name = 'created_gif.gif'
-    except:
-        create_gif(image_list, gif_name)
-    create_gif(image_list, gif_name)
+    Returns:
+        str: The final created directory path.
+    """
+    if os.path.exists(base_dir):
+        # 如果目录已存在，生成新的目录名
+        index = 1
+        while True:
+            new_dir = f"{base_dir}_{index}"
+            if not os.path.exists(new_dir):
+                base_dir = new_dir
+                break
+            index += 1
+
+    # 创建目录
+    os.makedirs(base_dir, exist_ok=True)
+    return base_dir
 
 
 class show_state_gif():
     def __init__(self):
         self.frames = []
-
     def __call__(self, env):
         self.frames.append(env.render(mode='rgb_array'))
 
     def save(self, game_name):
         gif_name = game_name + '.gif'
-        imageio.mimsave(gif_name, self.frames, 'GIF', duration=0.1)
+        imageio.mimsave(gif_name, self.frames, 'GIF', duration = 0.1)
 
 
-# 游戏状态可视化模块
-def show_state(env, step, name, info, vgdl_representation=None):
+def show_state(env, step, name, info, directory, vgdl_representation=None):
+    """
+    Render the environment state and save it as an image file.
+
+    Args:
+        env: Environment object used to render the image.
+        step (int): Current step.
+        name (str): Image name.
+        info (str): Additional information to display in the title.
+        directory (str): Target directory to save the image.
+        vgdl_representation: Optional parameter to override the rendering logic.
+
+    Returns:
+        str: The file path of the saved image; returns None if saving fails.
+    """
+    # Render the image
     plt.figure(3)
     plt.clf()
     try:
@@ -56,15 +73,18 @@ def show_state(env, step, name, info, vgdl_representation=None):
             img = vgdl_to_image(vgdl_representation)
             plt.imshow(img)
         else:
-            plt.text(0.5, 0.5, "无法获取图像", fontsize=14, ha='center')
+            plt.text(0.5, 0.5, "No image", fontsize=14, ha='center')
+
 
     plt.title(f"{name} | Step: {step} {info}")
     plt.axis("off")
-    os.makedirs('imgs', exist_ok=True)
-    path = f'imgs/{name}_{len(os.listdir("imgs")) + 1}.png'
-    plt.savefig(path)
-    return path if os.path.exists(path) else None
 
+
+    path = f'{directory}/{name}_{len(os.listdir(directory)) + 1}.png'
+    plt.savefig(path)
+
+
+    return path if os.path.exists(path) else None
 
 def vgdl_to_image(vgdl_representation):
     pygame.init()
@@ -99,7 +119,6 @@ def parse_vgdl_level(vgdl_level):
     max_width = max(len(row) for row in vgdl_level)
     padded_level = [row.ljust(max_width, ".") for row in vgdl_level]
 
-    # 添加avatar位置检测
     avatar_pos = None
     for y, row in enumerate(padded_level):
         if 'A' in row:
@@ -107,17 +126,16 @@ def parse_vgdl_level(vgdl_level):
             avatar_pos = (x, y)
             break
 
-    return np.array([list(row) for row in padded_level]), avatar_pos  # 返回元组
+    return np.array([list(row) for row in padded_level]), avatar_pos 
 
 
-# 增强奖励系统核心模块
-class EnhancedRewardSystem:
-    def __init__(self, action_space_size: int, window_size=15):
+class RewardSystem:
+    def __init__(self):
         self.action_history = []
         self.reward_history = []
         self.action_efficacy = defaultdict(list)
         self.consecutive_zero_threshold = 3
-        self.window_size = window_size
+        # self.window_size = window_size
         self.total_reward = 0.0
 
     def update(self, action: int, reward: float):
@@ -126,11 +144,11 @@ class EnhancedRewardSystem:
         self.action_efficacy[action].append(reward)
         self.total_reward += reward
 
-        if len(self.action_history) > self.window_size:
-            removed_action = self.action_history.pop(0)
-            self.reward_history.pop(0)
-            if self.action_efficacy[removed_action]:
-                self.action_efficacy[removed_action].pop(0)
+        # if len(self.action_history) > self.window_size:
+        #     removed_action = self.action_history.pop(0)
+        #     self.reward_history.pop(0)
+        #     if self.action_efficacy[removed_action]:
+        #         self.action_efficacy[removed_action].pop(0)
 
     # disable the zero streak function
     def generate_guidance(self) -> str:
@@ -143,42 +161,45 @@ class EnhancedRewardSystem:
             (i for i, r in enumerate(reversed(self.reward_history)) if r != 0),
             len(self.reward_history))
 
-    def _zero_reward_analysis(self) -> str:
-        recent_actions = self.action_history[-self.consecutive_zero_threshold:]
-        action_stats = {a: (np.mean(self.action_efficacy[a]), len(self.action_efficacy[a]))
-                        for a in set(recent_actions)}
-        return f"""
-    Zero reward for {self.get_zero_streak()} consecutive times.
-    Recent action sequence: {recent_actions}
-    Performance analysis:
-    {chr(10).join(f'- Action {a}: Average reward {avg:.2f} (Attempt count {count})'
-                  for a, (avg, count) in action_stats.items())}
-    It is recommended to try new action combinations or check rule compliance. 
-    Note that there may be a certain delay in rewards. 
-    Combining multiple actions (changing positions) will increase the probability of obtaining a reward.
+    # def _zero_reward_analysis(self) -> str:
+    #     recent_actions = self.action_history[-self.consecutive_zero_threshold:]
+    #     action_stats = {a: (np.mean(self.action_efficacy[a]), len(self.action_efficacy[a]))
+    #                     for a in set(recent_actions)}
+    #     return f"""
+    # Zero reward for {self.get_zero_streak()} consecutive times.
+    # Recent action sequence: {recent_actions}
+    # Performance analysis:
+    # {chr(10).join(f'- Action {a}: Average reward {avg:.2f} (Attempt count {count})'
+    #               for a, (avg, count) in action_stats.items())}
+    # It is recommended to try new action combinations or check rule compliance. 
+    # Note that there may be a certain delay in rewards. 
+    # Combining multiple actions (changing positions) will increase the probability of obtaining a reward.
 
-    Avoid repetitive location
-    Get the reward
-    The final goal is win the game
-    """
+    # Avoid repetitive location
+    # Get the reward
+    # The final goal is win the game
+    # """
 
-    def _performance_summary(self) -> str:
-        top_actions = sorted([(a, np.mean(r)) for a, r in self.action_efficacy.items() if r],
-                             key=lambda x: x[1], reverse=True)[:3]
-        return f"""
-    Best action:
-    {chr(10).join(f'- action{a}: average reward{reward:.2f}' for a, reward in top_actions)}
-    """
+    # def _performance_summary(self) -> str:
+    #     top_actions = sorted([(a, np.mean(r)) for a, r in self.action_efficacy.items() if r],
+    #                          key=lambda x: x[1], reverse=True)[:3]
+    #     return f"""
+    # Best action:
+    # {chr(10).join(f'- action{a}: average reward{reward:.2f}' for a, reward in top_actions)}
+    # """
 
-    # LLM交互模块
+
 
 
 def build_enhanced_prompt(vgdl_rules: str,
                           state: str,
                           last_state: str,
                           action_map: dict,
-                          reward_system: EnhancedRewardSystem,
-                          reflection_mgr: ReflectionManager) -> str:
+                          reward_system: RewardSystem,
+                          reflection_mgr: ReflectionManager,
+                          current_image_path: Optional[str] = None,
+                          last_image_path: Optional[str] = None,
+                          reflection = True, reward = False ) -> str:
     """Build English prompt with layout and reflection history"""
 
     last_action = None
@@ -188,14 +209,22 @@ def build_enhanced_prompt(vgdl_rules: str,
         last_reward = reward_system.reward_history[-1]
     last_action_desc = action_map.get(last_action, "None") if last_action is not None else "None"
     last_reward_desc = action_map.get(last_reward, "None") if last_reward is not None else "None"
-    base = f'''
+
+    formating = f'''
     You are controlling avatar A, try to win the game with actions. 
-    Goal: Try to interact the game by the game state and learn to play and win it.
+    Goal: Try to interact with the game by analyzing the game state and learn to play and win it.
     Respond in this format:
-    Action: <action number>
-    Reflection: ```<your strategy reflection>```
+    Action: <action number>'''
 
+    reflection_format =  None
+    reflection_section = ""
+    if reflection:
+        reflection_format = ''' Reflection: ```<your strategy reflection>```  '''
 
+        if reflection_mgr.history:
+            reflection_section = f"\n=== Reflection History ===\n{reflection_mgr.get_formatted_history()}"
+
+    base =f'''
     === Game Rules ===
     {vgdl_rules}
 
@@ -205,11 +234,11 @@ def build_enhanced_prompt(vgdl_rules: str,
     {last_state}
 
 
+
     === Current State ===
     You are "avatar"
     {state}
-    The image is also attached as the current state of the game. 
-
+   
     === Last Action ===
     {last_action} ({last_action_desc})
 
@@ -217,34 +246,24 @@ def build_enhanced_prompt(vgdl_rules: str,
     {chr(10).join(f'{k}: {v}' for k, v in action_map.items())}
     '''
 
-    # === Reward history ===
-    # {last_reward} ({last_reward_desc})
-    # '''
+    if reward:
+        reward_prompt = f'''
+         === Last Reward ===
+         {last_reward} ({last_reward_desc})
+        '''
+    else:
+        reward_prompt = ''
 
-    reflection_section = ""
-    if reflection_mgr.history:
-        reflection_section = f"\n=== Reflection History ===\n{reflection_mgr.get_formatted_history()}"
-
-    # reward reminder to enhance the performance
-    # reward_reminder = ""
-    # if last_reward == 0 and last_action is not None:
-    #     reward_reminder = "\n* The reward may delay from the action, please analyse the rule and think about the strategy. "
-    # elif last_action is None:
-    #     reward_reminder = "\n* The final goal is win the game."
-
-    # f'''
-    # {reward_system.generate_guidance()} //disable the guidance (zero streak and action average reward)
-    #     {reward_reminder}
     guidance = f'''
     * Strategic Priority:
 
-State Awareness: Recognize the differences between states and identify the optimal action to transition to a desired state. This process operates within a fully defined Markov framework.
-Action Consistency: Be mindful that your current decision may negate the effects of the previous action. Aim to maintain consistency and avoid contradictory moves.
-Meaningful Decisions: Ensure that your actions are purposeful. For instance, moving against a wall is unproductive and should be avoided.
-Reflect on these guidelines and formulate your own strategic priorities, presenting them in a clear and structured format.
-    '''
+    State Awareness: Recognize the differences between states and identify the optimal action to transition to a desired state. This process operates within a fully defined Markov framework.
+    Action Consistency: Be mindful that your current decision may negate the effects of the previous action. Aim to maintain consistency and avoid contradictory moves.
+    Meaningful Decisions: Ensure that your actions are purposeful. For instance, moving against a wall is unproductive and should be avoided.
+    Reflect on these guidelines and formulate your own strategic priorities, presenting them in a clear and structured format.
+        '''
 
-    return f"{base}{reflection_section}\n{guidance}"
+    return f"{formating}{reflection_format}{base}{reward_prompt}{reflection_section}\n{guidance}"
 
 
 def query_llm(llm_client: LLMClient,
@@ -252,18 +271,19 @@ def query_llm(llm_client: LLMClient,
               current_state: str,
               last_state: str,
               action_map: dict,
-              reward_system: EnhancedRewardSystem,
+              reward_system: RewardSystem,
               reflection_mgr: ReflectionManager,
               step: int,
-              image_path: Optional[str] = None) -> Tuple[int, str]:
+              current_image_path: Optional[str] = None,
+              last_image_path: Optional[str] = None,
+              reflection = True,
+              reward = False) -> Tuple[int, str]:
     prompt = build_enhanced_prompt(vgdl_rules, current_state, last_state, action_map,
-                                   reward_system, reflection_mgr)
+                                   reward_system, reflection_mgr, current_image_path, last_image_path,reflection,reward)
     try:
-
-        response = llm_client.query(prompt, image_path)
+        response = llm_client.query(prompt, image_path=current_image_path)
 
         action_match = re.search(r"Action:\s*(\d+)", response)
-        image_match = re.search(r"Image:\s*(\d+)", response)
         reflection_match = re.search(r"Reflection:\s*```(.*?)```", response, re.DOTALL)
 
         action = int(action_match.group(1)) if action_match else 0
@@ -273,7 +293,6 @@ def query_llm(llm_client: LLMClient,
 
         print(f"\n=== Step {step} ===")
         print(f"Selected Action: {action} ({action_map.get(action, 'Unknown')})")
-        # print(response)
         if reflection:
             print(f"Strategy Reflection: {reflection[:700]}...")
 
@@ -281,10 +300,10 @@ def query_llm(llm_client: LLMClient,
 
     except Exception as e:
         print(f"LLM query error: {str(e)}")
-        return 0, ""
+        return 0, " "
 
 
-def generate_report(system: EnhancedRewardSystem, step: int) -> str:
+def generate_report(system: RewardSystem, step: int, dir) -> str:
     print(f"\n=== Game analysis ===")
     print(f"Total steps: {step}")
     print(f"Total reward: {system.total_reward}")
@@ -299,77 +318,102 @@ def generate_report(system: EnhancedRewardSystem, step: int) -> str:
     action_dist = Counter(system.action_history)
     plt.bar(action_dist.keys(), action_dist.values())
     plt.title("Action distribution")
-    plt.savefig("game_analysis.png")
+    plt.savefig(dir+"game_analysis.png")
 
 
 if __name__ == "__main__":
-
-    env = gvgai.make("gvgai-assemblyline-lvl0-v0")
-    state = env.reset()
-    done = False
-
-    # VGDL rule
-    game_name = env.spec.id.replace("gvgai-", "").split("-")[0] + "_v0"
     current_path = os.path.dirname(os.path.abspath(__file__))
-    game_dir = os.path.join(os.path.dirname(current_path), "gym_gvgai", "envs", "games", game_name)
+    full_path = os.path.join(os.path.dirname(current_path), "gym_gvgai", "envs", "games")
+    llm_list = ["qwen","openai"]
 
-    vgdl_rule_file = next((os.path.join(game_dir, f) for f in os.listdir(game_dir)
-                           if f.endswith(".txt") and "lvl" not in f), None)
-    level_layout_file = next((os.path.join(game_dir, f) for f in os.listdir(game_dir)
-                              if f.endswith(".txt") and "lvl" in f), None)
+    for game in os.listdir(full_path):
+        env_name = "gvgai-"+game[:-3]+"-lvl0-v0"
 
-    if not vgdl_rule_file or not level_layout_file:
-        raise FileNotFoundError("No file detected")
+        env = gvgai.make(env_name)
+        state = env.reset()
+        done = False
 
-    with open(vgdl_rule_file, "r") as f:
-        vgdl_rules = f.read()
+        # VGDL rule
+        game_name = env.spec.id.replace("gvgai-", "").split("-")[0] + "_v0"
 
-    vgdl_grid, avatar_pos = parse_vgdl_level(level_layout_file)
-    h, w = vgdl_grid.shape
+        game_dir = os.path.join(os.path.dirname(current_path), "gym_gvgai", "envs", "games", game_name)
 
-    available_actions = list(range(env.action_space.n))
-    try:
-        action_mapping = {i: env.unwrapped.get_action_meanings()[i] for i in available_actions}
-    except AttributeError:
-        action_mapping = {i: f"Action {i}" for i in available_actions}
+        vgdl_rule_file = next((os.path.join(game_dir, f) for f in os.listdir(game_dir)
+                               if f.endswith(".txt") and "lvl" not in f), None)
+        level_layout_file = next((os.path.join(game_dir, f) for f in os.listdir(game_dir)
+                                  if f.endswith(".txt") and "lvl" in f), None)
 
-    llm_client = LLMClient("openai")
-    reflection_mgr = ReflectionManager()
-    reward_system = EnhancedRewardSystem(env.action_space.n)
 
-    try:
-        total_reward = 0
-        step_count = 0
-        info = None
-        image_path = None
-        img = show_state_gif()
-        last_state = None
-        game_state = vgdl_grid
-        while not done:
-            # try:
-            #     game_state = env.unwrapped.get_observation()
-            # except AttributeError:
 
-            action, reflection = query_llm(llm_client, vgdl_rules, game_state, last_state, action_mapping,
-                                           reward_system,
-                                           reflection_mgr, step_count)
-            next_state, reward, done, info = env.step(action)
-            reward_system.update(action, reward)
-            last_state = game_state
-            game_state = info["ascii"]
+        with open(vgdl_rule_file, "r") as f:
+            vgdl_rules = f.read()
+        with open(level_layout_file, "r") as f:
+            level_layout = f.read()
 
-            total_reward += reward
-            print(f"Received Reward: {reward}")
 
-            show_state(env, step_count,
-                       "enhanced_agent",
-                       f"Reward: {reward} | Action: {action}",
-                       game_state)
-            img(env)
+        vgdl_grid, avatar_pos = parse_vgdl_level(level_layout)
+        h, w = vgdl_grid.shape
 
-            step_count += 1
-    finally:
-        env.close()
-        img.save(game_name)
+        available_actions = list(range(env.action_space.n))
+        try:
+            action_mapping = {i: env.unwrapped.get_action_meanings()[i] for i in available_actions}
+        except AttributeError:
+            action_mapping = {i: f"Action {i}" for i in available_actions}
 
-        generate_report(reward_system, step_count - 1)
+
+        for llm in llm_list:
+
+            llm_client = LLMClient(llm)
+            state = env.reset()
+            done = False
+            reflection_mgr = ReflectionManager()
+            reward_system = RewardSystem()
+            total_reward = 0
+            step_count = 0
+            info = None
+            image_path = None
+            img = show_state_gif()
+            last_state = None
+            game_state = vgdl_grid
+            last_state_img = None
+            game_state_img = None
+            dir = create_directory("imgs/"+game_name)
+
+            try:
+
+                while not done:
+
+                    action, reflection = query_llm(llm_client, vgdl_rules,game_state, last_state, action_mapping, reward_system,
+                                                   reflection_mgr, step_count, game_state_img, last_state_img, reflection = False)
+                    next_state, reward, done, info = env.step(action)
+                    reward_system.update(action, reward)
+                    last_state = game_state
+                    game_state = info["ascii"]
+
+
+                    total_reward += reward
+                    print(f"Received Reward: {reward}")
+
+                    last_state_img = game_state_img
+
+                    game_state_img= show_state(env, step_count,
+                               "enhanced_agent",
+                               f"Reward: {reward} | Action: {action}",dir,
+                               game_state)
+                    img(env)
+                    winner = info['winner']
+                    step_count += 1
+
+
+            finally:
+
+                env.close()
+                try:
+                    img.save(dir+"_"+llm)
+                except:
+                    print("cannot save")
+                with open("game_logs.txt", mode="a") as f:
+                    f.write(f"game_name: {game_name}, step_count: {step_count}, winner: {winner}, api: {llm}\n")
+                generate_report(reward_system, step_count,dir+"_"+llm)
+
+
