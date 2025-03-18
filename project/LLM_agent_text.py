@@ -324,7 +324,7 @@ def generate_report(system: RewardSystem, step: int, dir) -> str:
 if __name__ == "__main__":
     current_path = os.path.dirname(os.path.abspath(__file__))
     full_path = os.path.join(os.path.dirname(current_path), "gym_gvgai", "envs", "games")
-    llm_list = ["deepseek"]
+    llm_list = ["ollama"]
 
     for game in os.listdir(full_path):
         env_name = "gvgai-"+game[:-3]+"-lvl0-v0"
@@ -377,14 +377,14 @@ if __name__ == "__main__":
             game_state = vgdl_grid
             last_state_img = None
             game_state_img = None
-            dir = create_directory("imgs/"+game_name)
+            dir = create_directory("img_text/"+game_name)
 
             try:
 
                 while not done:
 
                     action, reflection = query_llm(llm_client, vgdl_rules,game_state, last_state, action_mapping, reward_system,
-                                                   reflection_mgr, step_count, game_state_img, last_state_img, reflection = False)
+                                                   reflection_mgr, step_count, reflection = False)
                     next_state, reward, done, info = env.step(action)
                     reward_system.update(action, reward)
                     last_state = game_state
@@ -394,12 +394,12 @@ if __name__ == "__main__":
                     total_reward += reward
                     print(f"Received Reward: {reward}")
 
-                    last_state_img = game_state_img
+                    # last_state_img = game_state_img
 
-                    game_state_img= show_state(env, step_count,
-                               "enhanced_agent",
-                               f"Reward: {reward} | Action: {action}",dir,
-                               game_state)
+                    # game_state_img= show_state(env, step_count,
+                    #            "enhanced_agent",
+                    #            f"Reward: {reward} | Action: {action}",dir,
+                    #            game_state)
                     img(env)
                     winner = info['winner']
                     step_count += 1
@@ -412,8 +412,10 @@ if __name__ == "__main__":
                     img.save(dir+"_"+llm)
                 except:
                     print("cannot save")
-                with open("game_logs.txt", mode="a") as f:
+                with open("game_logs_text.txt", mode="a") as f:
                     f.write(f"game_name: {game_name}, step_count: {step_count}, winner: {winner}, api: {llm}\n")
                 generate_report(reward_system, step_count,dir+"_"+llm)
+
+    
 
 

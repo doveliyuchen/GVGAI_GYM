@@ -1,343 +1,292 @@
 import os
 import base64
 import requests
+import subprocess
+import time
 from typing import Dict, Optional
 from pathlib import Path
-from openai import OpenAI  # Import the new OpenAI client
+from openai import OpenAI
+from ollama import chat, ChatResponse
 import sys
 
+
 current_file = Path(__file__).resolve()
-project_root = current_file.parent.parent  # Assuming project structure: your_project/llm/client.py
+project_root = current_file.parent.parent 
 sys.path.insert(0, str(project_root))
 from utils.config import load_environment
 
-
 class LLMClient:
-    def __init__(self, model_name: str):
-        load_environment()  # Ensure environment variables are loaded
-        """
-        Initialize LLM client
-        :param model_name: Supported model names (openai/deepseek/qwen/claude)
-        """
+    def __init__(self, model_name: str, model: Optional[str] = None):
+        load_environment() 
         self.model_configs = {
             "openai": {
                 "env_var": "OPENAI_API_KEY",
                 "base_url": "https://api.openai.com/v1",
-                "default_model": "gpt-4o-mini",  # Updated for Vision API
-                "headers": lambda key: {"Authorization": f"Bearer {key}"},
-                "payload": {
-                    "temperature": 0,
-                    "max_tokens": 1000
-                }
+                "default_model": "gpt-4o-mini",
+                "chat_endpoint": "/chat/completions"
             },
             "deepseek": {
                 "env_var": "DEEPSEEK_API_KEY",
                 "base_url": "https://api.deepseek.com",
                 "default_model": "deepseek-chat",
-                "headers": lambda key: {"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
-                "payload": {
-                    "temperature": 0,
-                    "max_tokens": 1000,
-                }
+                "chat_endpoint": "/chat/completions"
             },
             "qwen": {
                 "env_var": "QWEN_API_KEY",
                 "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
                 "default_model": "qwen-plus",
-                "headers": lambda key: {"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
-                "payload": {
-                    "temperature": 0,
-                    "max_tokens": 1000
-                }
+                "chat_endpoint": "/chat/completions"
             },
             "claude": {
                 "env_var": "CLAUDE_API_KEY",
-                "base_url": "https://api.anthropic.com/v1",  # Updated base URL
-                "default_model": "claude-3-opus-20240229",  # Updated model name with version
-                "headers": lambda key: {
-                    "x-api-key": key,
-                    "anthropic-version": "2023-06-01",  # Required API version header
-                    "content-type": "application/json"
-                },
-                "payload": {
-                    "temperature": 0,
-                    "max_tokens": 1000
-                }
+                "base_url": "https://api.anthropic.com/v1",
+                "default_model": "claude-3-opus-20240229",
+                "chat_endpoint": "/chat/completions"
+            },
+            "groq": {
+                "env_var": "GROQ_API_KEY",
+                "base_url": "https://api.groq.com/openai/v1",
+                "default_model": "llama-3.3-70b-versatile",
+                "chat_endpoint": "/chat/completions"
+            },
+            "ollama": {
+                "env_var": None,
+                "base_url": "http://localhost:11434",
+                "default_model": "gemma3:27b",
+                "chat_endpoint": "/api/generate",
+                "dynamic_vision_check": True,
             }
         }
+        
         if model_name not in self.model_configs:
             raise ValueError(f"Unsupported model: {model_name}. Available options: {list(self.model_configs.keys())}")
+        
         self.model_name = model_name
         self.config = self.model_configs[model_name]
-        self.max_tokens = self.model_configs[model_name]["payload"]["max_tokens"]
-        self.api_key = os.getenv(self.config["env_var"])
-        if not self.api_key:
-            raise ValueError(f"API key not found for {self.config['env_var']}, please check your .env file")
-        self.client = OpenAI(
-            api_key=self.api_key,
-            base_url=self.config["base_url"]
-        )
+        self.default_model = model or self.config["default_model"]
+        self.supports_vision = self._check_vision_support()
+                # Handle API key requirements
+        if self.config["env_var"]:
+            self.api_key = os.getenv(self.config["env_var"])
+            if not self.api_key:
+                raise ValueError(f"API key not found for {self.config['env_var']}, please check your .env file")
+        else:
+            self.api_key = None
+
+        self.ollama_process = None 
+
+
+    def _check_vision_support(self) -> bool:
+        """动态检测模型是否支持视觉功能"""
+        if self.config.get("dynamic_vision_check", False):
+            try:
+                # 获取模型详细信息
+                response = requests.get(
+                    f"{self.config['base_url']}/api/show",
+                    params={"name": self.default_model},
+                    timeout=5
+                )
+                model_info = response.json()
+                
+                # 检查是否包含视觉相关参数
+                return "vision" in model_info.get("parameters", {}).get("capabilities", [])
+            except:
+                return False
+        return self.config.get("vision_support", False)
+        
+    def ensure_model_available(self):
+        """
+        Ensure the specified model is available locally.
+        If not, pull the model using the Ollama CLI.
+        """
+        if self.model_name != "ollama":
+            return  # 只对 Ollama 模型执行此操作
+
+        print(f"Checking if model '{self.default_model}' is available...")
+        try:
+            # 调用 Ollama CLI 检查模型是否存在
+            result = subprocess.run(
+                ['ollama', 'show', self.default_model],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            if result.returncode == 0:
+                # print(f"Model '{self.default_model}' is already available.")
+                return
+        except Exception as e:
+            print(f"Error checking model availability: {e}")
+
+        # 如果模型不存在，尝试下载
+        # print(f"Model '{self.default_model}' not found. Pulling it now...")
+        # try:
+        #     subprocess.run(['ollama', 'pull', self.default_model], check=True)
+        #     # print(f"Model '{self.default_model}' has been successfully pulled.")
+        # except subprocess.CalledProcessError as e:
+            # raise RuntimeError(f"Failed to pull model '{self.default_model}': {e.stderr}")
+
+    def start_ollama_service(self):
+        """启动 Ollama 服务"""
+        if self.model_name != "ollama":
+            print("Ollama service is only applicable for the 'ollama' model.")
+            return
+        
+        if self.ollama_process is not None:
+            # print("Ollama service is already running.")
+            return
+        
+        # print("Starting Ollama service...")
+        self.ollama_process = subprocess.Popen(['ollama', 'serve'])
+        time.sleep(5)  # 等待服务启动
+        # print("Ollama service has been started.")
+
+    def shutdown_ollama_service(self):
+        """关闭 Ollama 服务"""
+        if self.model_name != "ollama":
+            print("Ollama service is only applicable for the 'ollama' model.")
+            return
+        
+        if self.ollama_process is None:
+            print("Ollama service is not running.")
+            return
+        
+        print("Shutting down Ollama service...")
+        try:
+            # 终止子进程
+            self.ollama_process.terminate()
+            self.ollama_process.wait()
+            print("Ollama service has been terminated.")
+        except Exception as e:
+            print(f"Error shutting down Ollama service: {e}")
+        finally:
+            self.ollama_process = None
+
 
     def query(self, prompt: str, image_path: Optional[str] = None) -> str:
-        """Unified query interface"""
+        if image_path and not self.supports_vision:
+            raise ValueError(f"{self.default_model} does not support multi-modal inputs")
+        
         try:
-            if self.model_name == "deepseek":
-                return self._query_deepseek(prompt)
-            elif self.model_name in ["openai", "qwen", "claude"]:  # Added claude to multi-modal models
-                return self._query_multi_modal(prompt, image_path)
+            if self.model_name == "ollama":
+                if self.ollama_process is None:
+                    self.start_ollama_service()  # 自动启动 Ollama 服务
+                    self.ensure_model_available()
+                return self._query_ollama(prompt, image_path)
             else:
                 return self._query_text_only(prompt)
         except Exception as e:
             print(f"API request failed: {str(e)}")
             return ""
+        # finally:
+        #     if self.model_name == "ollama":
+        #         self.shutdown_ollama_service()  # 自动关闭 Ollama 服务
 
-    def _query_deepseek(self, prompt: str) -> str:
-        """Handle DeepSeek queries (streaming with reasoning content)"""
-        # try:
-        messages = [{"role": "user", "content": prompt}]
-        response = self.client.chat.completions.create(
-            model=self.config["default_model"],
-            messages=messages
-        )
-        reasoning_content = ""
-        # content = ""
-        # for chunk in response:
-        #     delta = chunk.choices[0].delta
-        #     if hasattr(delta, "reasoning_content") and delta.reasoning_content:
-        #         reasoning_content += delta.reasoning_content
-        #     elif hasattr(delta, "content") and delta.content:
-        #         content += delta.content
-        # print("Reasoning Content:", reasoning_content)  # 打印推理内容（可选）
-        return response.choices[0].message.content.strip()
-        # except Exception as e:
-        #     print(f"DeepSeek API 错误: {e}")
-        #     return ""
-
-    def _query_multi_modal(self, prompt: str, image_path: Optional[str] = None) -> str:
-        """Handle multi-modal queries (text + image)"""
+    def _query_ollama(self, prompt: str,image_path: Optional[str] = None) -> str:
+        """
+        Handle queries using the Ollama package.
+        
+        :param prompt: The text input for the model.
+        :return: The response from the Ollama model as a string.
+        """
         try:
-            # Handle Claude differently
-            if self.model_name == "claude" and image_path:
-                return self._query_claude_multimodal(prompt, image_path)
-            elif self.model_name == "claude":
-                # For text-only Claude queries
-                return self._query_claude_text(prompt)
-
-            messages = []
-            content = []
-
-            # 添加文本内容
-            if prompt:
-                content.append({"type": "text", "text": prompt})
-
-            # 添加图像内容（如果提供了图像路径）
-            if image_path:
-                with open(image_path, "rb") as image_file:
-                    base64_image = base64.b64encode(image_file.read()).decode("utf-8")
-                content.append({
-                    "type": "image_url",
-                    "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}
-                })
-
-            # 构建消息结构
-            messages.append({"role": "user", "content": content})
-
-            # 调用 API
-            if self.model_name == "openai":
-                response = self.client.chat.completions.create(
-                    model=self.config["default_model"],
-                    messages=messages,
-                    max_tokens=self.max_tokens
-                )
-            elif self.model_name == "qwen":
-                if self.config["default_model"] == "qwen-omni-turbo":
-                    completion = self.client.chat.completions.create(
-                        model=self.config["default_model"],
-                        messages=messages,
-                        max_tokens=self.max_tokens,
-                        stream=True
-                    )
-                    result = ""
-                    for chunk in completion:
-                        if chunk.choices:
-                            delta = chunk.choices[0].delta
-                            if hasattr(delta, "content") and delta.content:  # 确保 content 非空
-                                result += delta.content
-                    return result
-
-                response = self.client.chat.completions.create(
-                    model=self.config["default_model"],
-                    messages=messages,
-                    max_tokens=self.max_tokens
-                )
-
-            return response.choices[0].message.content.strip()
-
+            response: ChatResponse = chat(model=self.default_model, messages=[
+                {
+                    'role': 'user',
+                    'content': prompt,
+                },
+            ])
+            return response.message.content.strip()
         except Exception as e:
-            print(f"{self.model_name.capitalize()} API 错误: {e}")
-            return ""
-
-    def _query_claude_text(self, prompt: str) -> str:
-        """Handle Claude text-only queries"""
-        try:
-            payload = {
-                "model": self.config["default_model"],
-                "messages": [
-                    {"role": "user", "content": prompt}
-                ],
-                "max_tokens": self.max_tokens,
-                "temperature": self.config["payload"]["temperature"]
-            }
-
-            response = requests.post(
-                f"{self.config['base_url']}/messages",
-                headers=self.config["headers"](self.api_key),
-                json=payload
-            )
-            response.raise_for_status()
-            result = response.json()
-            return result.get("content", [{}])[0].get("text", "").strip()
-
-        except Exception as e:
-            print(f"Claude Text API Error: {e}")
-            if 'response' in locals() and hasattr(response, 'text'):
-                print(f"Response: {response.text}")
-            return ""
-
-    def _query_claude_multimodal(self, prompt: str, image_path: Optional[str] = None) -> str:
-        """Handle Claude multimodal queries using the messages API"""
-        response = None  # Initialize response to avoid reference before assignment
-        try:
-            # Prepare content list
-            content = []
-
-            # Add text
-            if prompt:
-                content.append({"type": "text", "text": prompt})
-
-            # Add image if provided
-            if image_path:
-                with open(image_path, "rb") as image_file:
-                    base64_image = base64.b64encode(image_file.read()).decode("utf-8")
-
-                # Get file extension from path
-                file_extension = Path(image_path).suffix.lstrip('.')
-                if file_extension.lower() not in ['jpg', 'jpeg', 'png', 'gif', 'webp']:
-                    file_extension = 'jpeg'  # Default to jpeg
-
-                content.append({
-                    "type": "image",
-                    "source": {
-                        "type": "base64",
-                        "media_type": f"image/{file_extension}",
-                        "data": base64_image
-                    }
-                })
-
-            # Construct the complete payload
-            payload = {
-                "model": self.config["default_model"],
-                "messages": [
-                    {"role": "user", "content": content}
-                ],
-                "max_tokens": self.max_tokens,
-                "temperature": self.config["payload"]["temperature"]
-            }
-
-            # Make the API request directly
-            response = requests.post(
-                f"{self.config['base_url']}/messages",
-                headers=self.config["headers"](self.api_key),
-                json=payload
-            )
-            response.raise_for_status()
-            result = response.json()
-            return result.get("content", [{}])[0].get("text", "").strip()
-
-        except Exception as e:
-            print(f"Claude Multimodal API Error: {e}")
-            if response is not None and hasattr(response, 'text'):
-                print(f"Response: {response.text}")
+            print(f"Ollama API Error: {e}")
             return ""
 
     def _query_text_only(self, prompt: str) -> str:
-        """Handle text-only queries"""
-        response = None  # Initialize to avoid reference before assignment
-        try:
-            payload = self._build_payload(prompt)
+        if self.model_name == "ollama":
+            return self._query_ollama(prompt)
+        
+        payload = {
+            "model": self.default_model,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0,
+            "max_tokens": 1000,
+        }
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
+        response = requests.post(
+            self.config["base_url"] + self.config["chat_endpoint"],
+            headers=headers,
+            json=payload,
+        )
+        response.raise_for_status()
+        return response.json()["choices"][0]["message"]["content"].strip()
+
+
+    def _query_multi_modal(self, prompt: str, image_path: str) -> str:
+
+        with open(image_path, "rb") as f:
+                base64_image = base64.b64encode(f.read()).decode("utf-8")
+            
+        if self.config["model_name"] == "ollama":
+            
+            payload = {
+                "model": self.default_model,
+                "prompt": prompt,
+                "images": [base64_image],  # Ollama使用images字段
+                "stream": False
+            }
             response = requests.post(
-                self.config["base_url"],
-                headers=self.config["headers"](self.api_key),
+                self.config["base_url"] + "/api/generate",
+                headers={"Content-Type": "application/json"},
                 json=payload,
-                timeout=30
             )
             response.raise_for_status()
-            return self._parse_response(response.json())
-        except requests.exceptions.RequestException as e:
-            print(f"API request failed: {str(e)}")
-            print("Response Data:", response.text if response is not None else "No response received.")
-            return ""
-        except KeyError as e:
-            print(f"Response parsing failed: {str(e)}")
-            return ""
-
-    def _build_payload(self, prompt: str, image_path: Optional[str] = None) -> Dict:
-        """Build model-specific payload"""
-        payload = self.config["payload"].copy()
-        if self.model_name == "deepseek":
-            payload["model"] = self.config["default_model"]
-            payload["messages"] = [{"role": "user", "content": prompt}]  # 使用 messages 字段
-        elif self.model_name == "openai":
-            payload["model"] = self.config["default_model"]
-            messages = [{"role": "user", "content": prompt}]
-            if image_path:
-                with open(image_path, "rb") as image_file:
-                    base64_image = base64.b64encode(image_file.read()).decode("utf-8")
-                messages.append({
-                    "type": "image_url",
-                    "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}
-                })
-            payload["messages"] = messages
-        elif self.model_name == "qwen":
-            payload["model"] = self.config["default_model"]
-            payload["prompt"] = prompt
-        elif self.model_name == "claude":
-            # For legacy endpoint that might be used elsewhere
-            payload["model"] = self.config["default_model"]
-            payload["messages"] = [{"role": "user", "content": [{"type": "text", "text": prompt}]}]
-        return payload
-
-    def _parse_response(self, response: Dict) -> str:
-        """Parse response from different models"""
-        if self.model_name == "deepseek":
-        # try:
-            return response.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
-        # except (KeyError, IndexError):
-        #     print("Response parsing failed: Unexpected response format.")
-        #     return ""
-        elif self.model_name == "openai":
-            return response["choices"][0]["message"]["content"].strip()
-        elif self.model_name == "qwen":
-            return response.get("output", {}).get("text", "").strip()
-        elif self.model_name == "claude":
-            # Handle the updated Claude API response format
-            return response.get("content", [{}])[0].get("text", "").strip()
-
+            return response.json()["response"]
+        
+       
+        
+        content = [
+            {"type": "text", "text": prompt},
+            {
+                "type": "image_url",
+                "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"},
+            },
+        ]
+        
+        payload = {
+            "model": self.default_model,
+            "messages": [{"role": "user", "content": content}],
+            "temperature": 0,
+            "max_tokens": 1000,
+        }
+        
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
+        response = requests.post(
+            self.config["base_url"] + self.config["chat_endpoint"],
+            headers=headers,
+            json=payload,
+        )
+        response.raise_for_status()
+        return response.json()["choices"][0]["message"]["content"].strip()
 
 if __name__ == "__main__":
-    # 初始化客户端
-    llm_ls = ["openai", "deepseek", "claude", "qwen"]
+    # 测试所有模型
+    llm_ls = [ "ollama"]
+
+
+
     for llm in llm_ls:
 
-        client = LLMClient(model_name='deepseek')  # 测试 Claude
-
-    # 测试纯文本查询
-        text_prompt = "9.11 和 9.8，哪个更大？"
-        text_result = client.query(text_prompt)
+        print(f"\nTesting {llm.upper()} model:")
+        client = LLMClient(model_name=llm)
+        # client.shutdown_ollama_service()
+        
+        # 测试文本查询
+        text_result = client.query("Compare 9.11 and 9.8, which is larger?")
         print("Text Response:", text_result)
+            
 
-        # 测试多模态查询
-        image_path = "../game_frames/VisionAgent_step0.png"  # 替换为你的图片路径
-        image_prompt = "这张图片的内容是什么？"
-        image_result = client.query(image_prompt, image_path=image_path)
-        print("Image Response:", image_result)
