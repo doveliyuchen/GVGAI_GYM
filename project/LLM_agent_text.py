@@ -357,7 +357,9 @@ if __name__ == "__main__":
 
         for llm in llm_list:
 
-            llm_client = LLMClient(llm)
+            if llm == "ollama":
+                model = "gemma3:12b"
+            llm_client = LLMClient(llm,model=model)
             state = env.reset()
             done = False
             reflection_mgr = ReflectionManager()

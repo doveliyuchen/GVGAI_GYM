@@ -52,7 +52,7 @@ class LLMClient:
             "ollama": {
                 "env_var": None,
                 "base_url": "http://localhost:11434",
-                "default_model": "gemma3:27b",
+                "default_model": "gemma3",
                 "chat_endpoint": "/api/generate",
                 "dynamic_vision_check": True,
             }
@@ -84,7 +84,7 @@ class LLMClient:
                 response = requests.get(
                     f"{self.config['base_url']}/api/show",
                     params={"name": self.default_model},
-                    timeout=5
+                    timeout=50
                 )
                 model_info = response.json()
                 
@@ -171,8 +171,11 @@ class LLMClient:
                 if self.ollama_process is None:
                     self.start_ollama_service()  # 自动启动 Ollama 服务
                     self.ensure_model_available()
+                
+                self.ensure_model_available()
                 return self._query_ollama(prompt, image_path)
             else:
+                
                 return self._query_text_only(prompt)
         except Exception as e:
             print(f"API request failed: {str(e)}")
