@@ -65,15 +65,11 @@ def show_state(env, step, name, info, directory, vgdl_representation=None):
     # Render the image
     plt.figure(3)
     plt.clf()
-    try:
-        img = env.render(mode='rgb_array')
-        plt.imshow(img)
-    except Exception as e:
-        if vgdl_representation:
-            img = vgdl_to_image(vgdl_representation)
-            plt.imshow(img)
-        else:
-            plt.text(0.5, 0.5, "No image", fontsize=14, ha='center')
+
+    img = env.render(mode='rgb_array')
+    plt.imshow(img)
+
+
 
 
     plt.title(f"{name} | Step: {step} {info}")
@@ -86,15 +82,7 @@ def show_state(env, step, name, info, directory, vgdl_representation=None):
 
     return path if os.path.exists(path) else None
 
-def vgdl_to_image(vgdl_representation):
-    pygame.init()
-    font = pygame.font.Font(None, 24)
-    surface = pygame.Surface((300, 300))
-    surface.fill((0, 0, 0))
-    for i, line in enumerate(vgdl_representation.split("\n")):
-        text = font.render(line, True, (255, 255, 255))
-        surface.blit(text, (10, i * 20))
-    return pygame.surfarray.array3d(surface)
+
 
 
 class ReflectionManager:
@@ -116,6 +104,10 @@ class ReflectionManager:
 
 
 def parse_vgdl_level(vgdl_level):
+    # 如果输入是字符串，则按换行符拆分成多行（换行符会被删除）
+    if isinstance(vgdl_level, str):
+        vgdl_level = vgdl_level.splitlines()
+
     max_width = max(len(row) for row in vgdl_level)
     padded_level = [row.ljust(max_width, ".") for row in vgdl_level]
 
@@ -126,7 +118,9 @@ def parse_vgdl_level(vgdl_level):
             avatar_pos = (x, y)
             break
 
-    return np.array([list(row) for row in padded_level]), avatar_pos 
+    # 每一行被转换为一个字符列表，从而构成一个二维矩阵
+    return np.array([list(row) for row in padded_level]), avatar_pos
+
 
 
 class RewardSystem:
@@ -388,7 +382,7 @@ if __name__ == "__main__":
                     next_state, reward, done, info = env.step(action)
                     reward_system.update(action, reward)
                     last_state = game_state
-                    game_state = info["ascii"]
+                    game_state = info["ascii"].splitlines()
 
 
                     total_reward += reward
