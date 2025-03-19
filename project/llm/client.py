@@ -102,7 +102,7 @@ class LLMClient:
         if self.model_name != "ollama":
             return  # 只对 Ollama 模型执行此操作
 
-        print(f"Checking if model '{self.default_model}' is available...")
+        # print(f"Checking if model '{self.default_model}' is available...")
         try:
             # 调用 Ollama CLI 检查模型是否存在
             result = subprocess.run(
