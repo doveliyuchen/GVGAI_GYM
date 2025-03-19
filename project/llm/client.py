@@ -119,11 +119,11 @@ class LLMClient:
 
         # 如果模型不存在，尝试下载
         # print(f"Model '{self.default_model}' not found. Pulling it now...")
-        # try:
-        #     subprocess.run(['ollama', 'pull', self.default_model], check=True)
-        #     # print(f"Model '{self.default_model}' has been successfully pulled.")
-        # except subprocess.CalledProcessError as e:
-            # raise RuntimeError(f"Failed to pull model '{self.default_model}': {e.stderr}")
+        try:
+            subprocess.run(['ollama', 'pull', self.default_model], check=True)
+            # print(f"Model '{self.default_model}' has been successfully pulled.")
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError(f"Failed to pull model '{self.default_model}': {e.stderr}")
 
     def start_ollama_service(self):
         """启动 Ollama 服务"""
