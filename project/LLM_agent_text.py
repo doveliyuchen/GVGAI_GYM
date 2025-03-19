@@ -65,10 +65,8 @@ def show_state(env, step, name, info, directory, vgdl_representation=None):
     # Render the image
     plt.figure(3)
     plt.clf()
-
     img = env.render(mode='rgb_array')
     plt.imshow(img)
-
 
 
 
@@ -81,7 +79,6 @@ def show_state(env, step, name, info, directory, vgdl_representation=None):
 
 
     return path if os.path.exists(path) else None
-
 
 
 
@@ -120,6 +117,7 @@ def parse_vgdl_level(vgdl_level):
 
     # 每一行被转换为一个字符列表，从而构成一个二维矩阵
     return np.array([list(row) for row in padded_level]), avatar_pos
+
 
 
 
@@ -254,7 +252,7 @@ def build_enhanced_prompt(vgdl_rules: str,
     State Awareness: Recognize the differences between states and identify the optimal action to transition to a desired state. This process operates within a fully defined Markov framework.
     Action Consistency: Be mindful that your current decision may negate the effects of the previous action. Aim to maintain consistency and avoid contradictory moves.
     Meaningful Decisions: Ensure that your actions are purposeful. For instance, moving against a wall is unproductive and should be avoided.
-    Reflect on these guidelines and formulate your own strategic priorities, presenting them in a clear and structured format.
+  
         '''
 
     return f"{formating}{reflection_format}{base}{reward_prompt}{reflection_section}\n{guidance}"
@@ -270,33 +268,70 @@ def query_llm(llm_client: LLMClient,
               step: int,
               current_image_path: Optional[str] = None,
               last_image_path: Optional[str] = None,
-              reflection = True,
-              reward = False) -> Tuple[int, str]:
+              reflection: bool = False,
+              reward: bool = False) -> Tuple[int, str]:
+    """
+    Queries the LLM with the game state and extracts the selected action and reflection.
+    
+    Args:
+        llm_client (LLMClient): The LLM client for querying responses.
+        vgdl_rules (str): The game rules in VGDL format.
+        current_state (str): The current game state.
+        last_state (str): The last game state.
+        action_map (dict): Mapping of action IDs to action names.
+        reward_system (RewardSystem): The reward system used in the game.
+        reflection_mgr (ReflectionManager): Manager for reflection strategies.
+        step (int): The current step number in the game loop.
+        current_image_path (Optional[str], optional): Path to the current state image. Defaults to None.
+        last_image_path (Optional[str], optional): Path to the last state image. Defaults to None.
+        reflection (bool, optional): Whether to use reflection. Defaults to True.
+        reward (bool, optional): Whether to use reward feedback. Defaults to False.
+
+    Returns:
+        Tuple[int, str]: The selected action ID and the extracted reflection.
+    """
+    # 构建 Prompt
     prompt = build_enhanced_prompt(vgdl_rules, current_state, last_state, action_map,
-                                   reward_system, reflection_mgr, current_image_path, last_image_path,reflection,reward)
+                                   reward_system, reflection_mgr, current_image_path, last_image_path, reflection, reward)
     try:
+        # 发送 LLM 请求
         response = llm_client.query(prompt, image_path=current_image_path)
 
-        action_match = re.search(r"Action:\s*(\d+)", response)
-        reflection_match = re.search(r"Reflection:\s*```(.*?)```", response, re.DOTALL)
+        if not response:
+            raise ValueError("Empty response from LLM.")
 
-        action = int(action_match.group(1)) if action_match else 0
-        reflection = reflection_match.group(1).strip() if reflection_match else ""
+        # 查找所有可能的 Action
+        action_matches = re.findall(r"(\d+|ACTION_[A-Z_]+)", response)
 
+        # 选取最后一个符合的 Action
+        action = 0  # 默认值
+        if action_matches:
+            last_action_str = action_matches[-1].strip()
+            if last_action_str.isdigit():
+                action = int(last_action_str)
+            else:
+                reverse_action_map = {v: k for k, v in action_map.items()}  # 反向映射
+                action = reverse_action_map.get(last_action_str.upper(), 0)
+
+        # 确保 Action 在合法范围内
         action = action if action in action_map else 0
 
+        # 查找 Reflection（策略思考）
+        reflection_match = re.search(r"Reflection:\s*```(.*?)```", response, re.DOTALL)
+        reflection_text = reflection_match.group(1).strip() if reflection_match else ""
+
+        # 打印调试信息
         print(f"\n=== Step {step} ===")
         print(f"Selected Action: {action} ({action_map.get(action, 'Unknown')})")
-        if reflection:
-            print(f"Strategy Reflection: {reflection[:700]}...")
+        if reflection_text:
+            print(f"Strategy Reflection: {reflection_text[:700]}...")
 
-        return action, reflection
+        return action, reflection_text
 
     except Exception as e:
         print(f"LLM query error: {str(e)}")
         return 0, " "
-
-
+        
 def generate_report(system: RewardSystem, step: int, dir) -> str:
     print(f"\n=== Game analysis ===")
     print(f"Total steps: {step}")
@@ -318,7 +353,7 @@ def generate_report(system: RewardSystem, step: int, dir) -> str:
 if __name__ == "__main__":
     current_path = os.path.dirname(os.path.abspath(__file__))
     full_path = os.path.join(os.path.dirname(current_path), "gym_gvgai", "envs", "games")
-    llm_list = ["ollama"]
+    llm_list = ["openai","qwen","deepseek"]
 
     for game in os.listdir(full_path):
         env_name = "gvgai-"+game[:-3]+"-lvl0-v0"
@@ -340,7 +375,7 @@ if __name__ == "__main__":
 
 
         with open(vgdl_rule_file, "r") as f:
-            vgdl_rules = f.read()
+            vgdl_rules = f.read().splitlines()
         with open(level_layout_file, "r") as f:
             level_layout = f.read()
 
@@ -357,9 +392,7 @@ if __name__ == "__main__":
 
         for llm in llm_list:
 
-            if llm == "ollama":
-                model = "gemma3:12b"
-            llm_client = LLMClient(llm,model=model)
+            llm_client = LLMClient(llm)
             state = env.reset()
             done = False
             reflection_mgr = ReflectionManager()
@@ -384,7 +417,7 @@ if __name__ == "__main__":
                     next_state, reward, done, info = env.step(action)
                     reward_system.update(action, reward)
                     last_state = game_state
-                    game_state = info["ascii"].splitlines()
+                    game_state = [row.split(',') for row in info["ascii"].splitlines()]
 
 
                     total_reward += reward
@@ -408,8 +441,8 @@ if __name__ == "__main__":
                     img.save(dir+"_"+llm)
                 except:
                     print("cannot save")
-                with open("game_logs_text.txt", mode="a") as f:
-                    f.write(f"game_name: {game_name}, step_count: {step_count}, winner: {winner}, api: {llm}\n")
+                with open(f"game_logs_{llm}.txt", mode="a") as f:
+                    f.write(f"game_name: {game_name}, step_count: {step_count}, winner: {winner}, api: {llm}, reward: {total_reward}\n")
                 generate_report(reward_system, step_count,dir+"_"+llm)
 
     
