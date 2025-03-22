@@ -109,7 +109,8 @@ class LLMClient:
                 ['ollama', 'show', self.default_model],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                text=True
+                text=True,
+                encoding="utf-8"
             )
             if result.returncode == 0:
                 # print(f"Model '{self.default_model}' is already available.")

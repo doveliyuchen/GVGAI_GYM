@@ -9,7 +9,7 @@ from llm.client import LLMClient
 from collections import defaultdict, Counter
 from typing import Iterable, Tuple, Optional
 import imageio
-
+import time
 
 def create_directory(base_dir='imgs'):
     """
@@ -136,49 +136,15 @@ class RewardSystem:
         self.action_efficacy[action].append(reward)
         self.total_reward += reward
 
-        # if len(self.action_history) > self.window_size:
-        #     removed_action = self.action_history.pop(0)
-        #     self.reward_history.pop(0)
-        #     if self.action_efficacy[removed_action]:
-        #         self.action_efficacy[removed_action].pop(0)
 
-    # disable the zero streak function
+
     def generate_guidance(self) -> str:
-        # if self.get_zero_streak() >= self.consecutive_zero_threshold:
-        #     return self._zero_reward_analysis()
         return self._performance_summary()
 
     def get_zero_streak(self) -> int:
         return next(
             (i for i, r in enumerate(reversed(self.reward_history)) if r != 0),
             len(self.reward_history))
-
-    # def _zero_reward_analysis(self) -> str:
-    #     recent_actions = self.action_history[-self.consecutive_zero_threshold:]
-    #     action_stats = {a: (np.mean(self.action_efficacy[a]), len(self.action_efficacy[a]))
-    #                     for a in set(recent_actions)}
-    #     return f"""
-    # Zero reward for {self.get_zero_streak()} consecutive times.
-    # Recent action sequence: {recent_actions}
-    # Performance analysis:
-    # {chr(10).join(f'- Action {a}: Average reward {avg:.2f} (Attempt count {count})'
-    #               for a, (avg, count) in action_stats.items())}
-    # It is recommended to try new action combinations or check rule compliance. 
-    # Note that there may be a certain delay in rewards. 
-    # Combining multiple actions (changing positions) will increase the probability of obtaining a reward.
-
-    # Avoid repetitive location
-    # Get the reward
-    # The final goal is win the game
-    # """
-
-    # def _performance_summary(self) -> str:
-    #     top_actions = sorted([(a, np.mean(r)) for a, r in self.action_efficacy.items() if r],
-    #                          key=lambda x: x[1], reverse=True)[:3]
-    #     return f"""
-    # Best action:
-    # {chr(10).join(f'- action{a}: average reward{reward:.2f}' for a, reward in top_actions)}
-    # """
 
 
 
@@ -191,8 +157,8 @@ def build_enhanced_prompt(vgdl_rules: str,
                           reflection_mgr: ReflectionManager,
                           current_image_path: Optional[str] = None,
                           last_image_path: Optional[str] = None,
-                          reflection = True, reward = False ) -> str:
-    """Build English prompt with layout and reflection history"""
+                          reflection = False, reward = False ) -> str:
+    """Build prompt with layout and reflection history"""
 
     last_action = None
     last_reward = None
@@ -203,16 +169,17 @@ def build_enhanced_prompt(vgdl_rules: str,
     last_reward_desc = action_map.get(last_reward, "None") if last_reward is not None else "None"
 
     formating = f'''
-    You are controlling avatar A, try to win the game with actions. 
-    Goal: Try to interact with the game by analyzing the game state and learn to play and win it.
-    Respond in this format:
-    Action: <action number>'''
+    You are controlling avatar A, try to win the game with *meaningful action* step by step.\n
+    Goal: Try to interact with the game by analyzing the game state and learn to play and win it. 
+    Respond in this format with only *ONE* action:\n
+    ``` Action:<action number> ``` \n'''
+    # You cannot ask questions after your chosen action.
 
     reflection_format =  None
+    guidance = None
     reflection_section = ""
     if reflection:
         reflection_format = ''' Reflection: ```<your strategy reflection>```  '''
-
         if reflection_mgr.history:
             reflection_section = f"\n=== Reflection History ===\n{reflection_mgr.get_formatted_history()}"
 
@@ -224,8 +191,6 @@ def build_enhanced_prompt(vgdl_rules: str,
     === Last State ===
     You are "avatar"
     {last_state}
-
-
 
     === Current State ===
     You are "avatar"
@@ -246,16 +211,87 @@ def build_enhanced_prompt(vgdl_rules: str,
     else:
         reward_prompt = ''
 
-    guidance = f'''
-    * Strategic Priority:
+#     guidance = f'''
+# State Awareness: Recognize the differences between states and identify the optimal action to transition to a desired state. Consider this process operates within a fully defined Markov framework.
+# Action Consistency: Be mindful that your current decision may negate the effects of the previous action. Aim to maintain consistency and avoid contradictory moves.
+# Meaningful Decisions: Ensure that your actions are purposeful. For instance, moving against a wall is unproductive and should be avoided.
+# '''
 
-    State Awareness: Recognize the differences between states and identify the optimal action to transition to a desired state. This process operates within a fully defined Markov framework.
-    Action Consistency: Be mindful that your current decision may negate the effects of the previous action. Aim to maintain consistency and avoid contradictory moves.
-    Meaningful Decisions: Ensure that your actions are purposeful. For instance, moving against a wall is unproductive and should be avoided.
-  
-        '''
+    return f"{formating}{reflection_format}{base}{reward_prompt}{reflection_section}\n{guidance}\n"
 
-    return f"{formating}{reflection_format}{base}{reward_prompt}{reflection_section}\n{guidance}"
+# ====action match======
+
+
+def parse_action_from_response(response: str, action_map: dict) -> Tuple[int, str]:
+    reverse_action_dict = {v: k for k, v in action_map.items()}
+
+    # 0. 支持 boxed{D} 方向标注
+    boxed_match = re.findall(r"\\boxed\{([A-Z])\}", response)
+    if boxed_match:
+        boxed_letter = boxed_match[-1].lower()
+        boxed_to_keyword = {
+            "d": "down", "u": "up", "l": "left", "r": "right",
+        }
+        direction_word = boxed_to_keyword.get(boxed_letter)
+        if direction_word:
+            for aid, aname in action_map.items():
+                if direction_word in aname.lower():
+                    return aid, aname
+
+    # 1. 匹配 "4 (ACTION_DOWN)" 样式
+    full_pairs = re.findall(r"(\d+)\s*\(\s*(ACTION_[A-Z_]+)\s*\)", response)
+    for num, act_name in reversed(full_pairs):
+        if act_name in reverse_action_dict:
+            return reverse_action_dict[act_name], act_name
+
+    # 2. 匹配单独 ACTION_XXX
+    action_words = re.findall(r"ACTION_[A-Z_]+", response)
+    for act_name in reversed(action_words):
+        if act_name in reverse_action_dict:
+            return reverse_action_dict[act_name], act_name
+
+    # 3. 匹配 "action 3", "action is 2"
+    action_phrase_match = re.findall(r"\baction(?:\s*(?:is|=|:)?\s*)(\d+|ACTION_[A-Z_]+)\b", response, re.IGNORECASE)
+    for val in reversed(action_phrase_match):
+        if val.isdigit():
+            num = int(val)
+            if num in action_map:
+                return num, action_map[num]
+        elif val.upper() in reverse_action_dict:
+            return reverse_action_dict[val.upper()], val.upper()
+
+
+    # 5. 构建关键词 → 动作 ID 映射
+    keyword_to_action = {}
+    for aid, aname in action_map.items():
+        words = aname.replace("ACTION_", "").lower().split("_")
+        for word in words:
+            keyword_to_action[word] = aid
+
+    # 6. 匹配 "move/go/step/etc. direction" 自然语言表达
+    smart_matches = re.findall(r"\b(?:move|go|walk|run|head|step|proceed)[\s_]*(left|right|up|down|use|nothing|nil)\b", response.lower())
+    if smart_matches:
+        keyword = smart_matches[-1]
+        if keyword in keyword_to_action:
+            aid = keyword_to_action[keyword]
+            return aid, action_map[aid]
+
+    # 7. 匹配孤立关键词
+    keyword_matches = re.findall(r"\b(" + "|".join(re.escape(k) for k in keyword_to_action) + r")\b", response.lower())
+    if keyword_matches:
+        keyword = keyword_matches[-1]
+        aid = keyword_to_action[keyword]
+        return aid, action_map[aid]
+    
+    number_matches = re.findall(r"\b(\d+)\b", response)
+    for num in reversed(number_matches):
+        val = int(num)
+        if val in action_map:
+            return val, action_map[val]
+
+    # 8. fallback
+    return 0, action_map[0]
+
 
 
 def query_llm(llm_client: LLMClient,
@@ -268,53 +304,25 @@ def query_llm(llm_client: LLMClient,
               step: int,
               current_image_path: Optional[str] = None,
               last_image_path: Optional[str] = None,
-              reflection: bool = False,
-              reward: bool = False) -> Tuple[int, str]:
-    """
-    Queries the LLM with the game state and extracts the selected action and reflection.
-    
-    Args:
-        llm_client (LLMClient): The LLM client for querying responses.
-        vgdl_rules (str): The game rules in VGDL format.
-        current_state (str): The current game state.
-        last_state (str): The last game state.
-        action_map (dict): Mapping of action IDs to action names.
-        reward_system (RewardSystem): The reward system used in the game.
-        reflection_mgr (ReflectionManager): Manager for reflection strategies.
-        step (int): The current step number in the game loop.
-        current_image_path (Optional[str], optional): Path to the current state image. Defaults to None.
-        last_image_path (Optional[str], optional): Path to the last state image. Defaults to None.
-        reflection (bool, optional): Whether to use reflection. Defaults to True.
-        reward (bool, optional): Whether to use reward feedback. Defaults to False.
-
-    Returns:
-        Tuple[int, str]: The selected action ID and the extracted reflection.
-    """
-    # 构建 Prompt
+              reflection = False,
+              reward = False) -> Tuple[int, str]:
     prompt = build_enhanced_prompt(vgdl_rules, current_state, last_state, action_map,
-                                   reward_system, reflection_mgr, current_image_path, last_image_path, reflection, reward)
+                                   reward_system, reflection_mgr, current_image_path, last_image_path,reflection,reward)
+
     try:
-        # 发送 LLM 请求
+        # time.sleep(1)
         response = llm_client.query(prompt, image_path=current_image_path)
+        print(response)
 
-        if not response:
-            raise ValueError("Empty response from LLM.")
+        reflection_match = re.search(r"Reflection:\s*```(.*?)```", response, re.DOTALL)
 
-        # 查找所有可能的 Action
-        action_matches = re.findall(r"(\d+|ACTION_[A-Z_]+)", response)
 
-        # 选取最后一个符合的 Action
+        # 初始化 action 变量
         action = 0  # 默认值
-        if action_matches:
-            last_action_str = action_matches[-1].strip()
-            if last_action_str.isdigit():
-                action = int(last_action_str)
-            else:
-                reverse_action_map = {v: k for k, v in action_map.items()}  # 反向映射
-                action = reverse_action_map.get(last_action_str.upper(), 0)
 
-        # 确保 Action 在合法范围内
-        action = action if action in action_map else 0
+        action, action_name = parse_action_from_response(response, action_map)
+  
+        reflection = reflection_match.group(1).strip() if reflection_match else ""
 
         # 查找 Reflection（策略思考）
         reflection_match = re.search(r"Reflection:\s*```(.*?)```", response, re.DOTALL)
@@ -322,9 +330,9 @@ def query_llm(llm_client: LLMClient,
 
         # 打印调试信息
         print(f"\n=== Step {step} ===")
-        print(f"Selected Action: {action} ({action_map.get(action, 'Unknown')})")
-        if reflection_text:
-            print(f"Strategy Reflection: {reflection_text[:700]}...")
+        print(f"Selected Action: {action} ({action_name})")
+        if reflection:
+            print(f"Strategy Reflection: {reflection[:700]}...")
 
         return action, reflection_text
 
@@ -353,9 +361,10 @@ def generate_report(system: RewardSystem, step: int, dir) -> str:
 if __name__ == "__main__":
     current_path = os.path.dirname(os.path.abspath(__file__))
     full_path = os.path.join(os.path.dirname(current_path), "gym_gvgai", "envs", "games")
-    llm_list = ["openai","qwen","deepseek"]
+    llm_list = {"ollama": ["deepseek-r1:14b","gemma3:12b"] }
 
     for game in os.listdir(full_path):
+
         env_name = "gvgai-"+game[:-3]+"-lvl0-v0"
 
         env = gvgai.make(env_name)
@@ -390,9 +399,11 @@ if __name__ == "__main__":
             action_mapping = {i: f"Action {i}" for i in available_actions}
 
 
-        for llm in llm_list:
+        for model in llm_list["ollama"]:
 
-            llm_client = LLMClient(llm)
+            llm, = llm_list.keys()
+
+            llm_client = LLMClient(llm,model=model)
             state = env.reset()
             done = False
             reflection_mgr = ReflectionManager()
@@ -406,7 +417,11 @@ if __name__ == "__main__":
             game_state = vgdl_grid
             last_state_img = None
             game_state_img = None
-            dir = create_directory("img_text/"+game_name)
+            llm_dir = re.search(r"(.*?):", model)  # 捕获冒号前的内容
+            if llm_dir:
+                llm_dir = llm_dir.group(1).strip() 
+            # llm_dir = re.search(r"(.*?):", model).group(1).strip()
+            dir = create_directory(f"img_{llm_dir}/"+game_name)
 
             try:
 
@@ -423,12 +438,6 @@ if __name__ == "__main__":
                     total_reward += reward
                     print(f"Received Reward: {reward}")
 
-                    # last_state_img = game_state_img
-
-                    # game_state_img= show_state(env, step_count,
-                    #            "enhanced_agent",
-                    #            f"Reward: {reward} | Action: {action}",dir,
-                    #            game_state)
                     img(env)
                     winner = info['winner']
                     step_count += 1
@@ -441,8 +450,8 @@ if __name__ == "__main__":
                     img.save(dir+"_"+llm)
                 except:
                     print("cannot save")
-                with open(f"game_logs_{llm}.txt", mode="a") as f:
-                    f.write(f"game_name: {game_name}, step_count: {step_count}, winner: {winner}, api: {llm}, reward: {total_reward}\n")
+                with open(f"game_logs_text_{llm}.txt", mode="a") as f:
+                    f.write(f"game_name: {game_name}, step_count: {step_count}, winner: {winner}, api: {llm}, total reward: {total_reward}, end_state: {game_state}\n")
                 generate_report(reward_system, step_count,dir+"_"+llm)
 
     
