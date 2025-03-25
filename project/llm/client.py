@@ -193,12 +193,16 @@ class LLMClient:
         :return: The response from the Ollama model as a string.
         """
         try:
-            response: ChatResponse = chat(model=self.default_model, messages=[
+            response: ChatResponse = chat(model=self.default_model,messages=[
                 {
                     'role': 'user',
-                    'content': prompt,
+                    'content': prompt
                 },
-            ])
+            ],
+            options={
+                "temperature": 0.9
+            }
+        )
             return response.message.content.strip()
         except Exception as e:
             print(f"Ollama API Error: {e}")

@@ -169,14 +169,14 @@ def build_enhanced_prompt(vgdl_rules: str,
     last_reward_desc = action_map.get(last_reward, "None") if last_reward is not None else "None"
 
     formating = f'''
-    You are controlling avatar A, try to win the game with *meaningful action* step by step.\n
+    You are controlling avatar A, try to win the game with *meaningful action*.\n
     Goal: Try to interact with the game by analyzing the game state and learn to play and win it. 
-    Respond in this format with only *ONE* action:\n
+    Respond in this format with only *ONE* action with a sentence of analysis of your current position:\n
     ``` Action:<action number> ``` \n'''
     # You cannot ask questions after your chosen action.
 
-    reflection_format =  None
-    guidance = None
+    reflection_format =  ""
+    guidance = ""
     reflection_section = ""
     if reflection:
         reflection_format = ''' Reflection: ```<your strategy reflection>```  '''
@@ -189,7 +189,6 @@ def build_enhanced_prompt(vgdl_rules: str,
 
 
     === Last State ===
-    You are "avatar"
     {last_state}
 
     === Current State ===
@@ -197,7 +196,7 @@ def build_enhanced_prompt(vgdl_rules: str,
     {state}
    
     === Last Action ===
-    {last_action} ({last_action_desc})
+    {last_action}
 
     === Available Actions ===
     {chr(10).join(f'{k}: {v}' for k, v in action_map.items())}
@@ -222,37 +221,19 @@ def build_enhanced_prompt(vgdl_rules: str,
 # ====action match======
 
 
+# 修改为优先匹配 "action" + 任意符号 + 动作（数字 或 ACTION_XXX），而不是 "ANSWER:"
+
 def parse_action_from_response(response: str, action_map: dict) -> Tuple[int, str]:
     reverse_action_dict = {v: k for k, v in action_map.items()}
 
-    # 0. 支持 boxed{D} 方向标注
-    boxed_match = re.findall(r"\\boxed\{([A-Z])\}", response)
-    if boxed_match:
-        boxed_letter = boxed_match[-1].lower()
-        boxed_to_keyword = {
-            "d": "down", "u": "up", "l": "left", "r": "right",
-        }
-        direction_word = boxed_to_keyword.get(boxed_letter)
-        if direction_word:
-            for aid, aname in action_map.items():
-                if direction_word in aname.lower():
-                    return aid, aname
+    keyword_to_action = {}
+    for aid, aname in action_map.items():
+        for word in aname.replace("ACTION_", "").lower().split("_"):
+            keyword_to_action[word] = aid
 
-    # 1. 匹配 "4 (ACTION_DOWN)" 样式
-    full_pairs = re.findall(r"(\d+)\s*\(\s*(ACTION_[A-Z_]+)\s*\)", response)
-    for num, act_name in reversed(full_pairs):
-        if act_name in reverse_action_dict:
-            return reverse_action_dict[act_name], act_name
-
-    # 2. 匹配单独 ACTION_XXX
-    action_words = re.findall(r"ACTION_[A-Z_]+", response)
-    for act_name in reversed(action_words):
-        if act_name in reverse_action_dict:
-            return reverse_action_dict[act_name], act_name
-
-    # 3. 匹配 "action 3", "action is 2"
-    action_phrase_match = re.findall(r"\baction(?:\s*(?:is|=|:)?\s*)(\d+|ACTION_[A-Z_]+)\b", response, re.IGNORECASE)
-    for val in reversed(action_phrase_match):
+    # 1. 优先匹配 action + 任意符号 + 动作值（数字或ACTION_XXX）
+    action_stmt_match = re.findall(r"\baction\s*[:=~\-]?\s*(\d+|ACTION_[A-Z_]+)", response, re.IGNORECASE)
+    for val in reversed(action_stmt_match):
         if val.isdigit():
             num = int(val)
             if num in action_map:
@@ -260,36 +241,62 @@ def parse_action_from_response(response: str, action_map: dict) -> Tuple[int, st
         elif val.upper() in reverse_action_dict:
             return reverse_action_dict[val.upper()], val.upper()
 
+    # 2. 明确表达 ACTION_NIL
+    nil_match = re.findall(r"ACTION[_\\]*NIL", response, re.IGNORECASE)
+    if nil_match:
+        return 0, action_map[0]
 
-    # 5. 构建关键词 → 动作 ID 映射
-    keyword_to_action = {}
-    for aid, aname in action_map.items():
-        words = aname.replace("ACTION_", "").lower().split("_")
-        for word in words:
-            keyword_to_action[word] = aid
+    # 3. 代码块内容（数字、ACTION、关键词）
+    code_blocks = re.findall(r"```(?:python)?\s*([\s\S]*?)```", response)
+    for block in reversed(code_blocks):
+        num_match = re.findall(r"\b(\d+)\b", block)
+        for val in reversed(num_match):
+            num = int(val)
+            if num in action_map:
+                return num, action_map[num]
 
-    # 6. 匹配 "move/go/step/etc. direction" 自然语言表达
-    smart_matches = re.findall(r"\b(?:move|go|walk|run|head|step|proceed)[\s_]*(left|right|up|down|use|nothing|nil)\b", response.lower())
-    if smart_matches:
-        keyword = smart_matches[-1]
-        if keyword in keyword_to_action:
-            aid = keyword_to_action[keyword]
+        action_words = re.findall(r"ACTION_[A-Z_]+", block)
+        for act_name in reversed(action_words):
+            if act_name in reverse_action_dict:
+                return reverse_action_dict[act_name], act_name
+
+        word_matches = re.findall(r"\b(" + "|".join(re.escape(k) for k in keyword_to_action) + r")\b", block.lower())
+        for word in reversed(word_matches):
+            aid = keyword_to_action[word]
             return aid, action_map[aid]
 
-    # 7. 匹配孤立关键词
-    keyword_matches = re.findall(r"\b(" + "|".join(re.escape(k) for k in keyword_to_action) + r")\b", response.lower())
-    if keyword_matches:
-        keyword = keyword_matches[-1]
-        aid = keyword_to_action[keyword]
-        return aid, action_map[aid]
-    
+    # 4. 全局 ACTION_XXX
+    action_words = re.findall(r"ACTION_[A-Z_]+", response)
+    for act_name in reversed(action_words):
+        if act_name in reverse_action_dict:
+            return reverse_action_dict[act_name], act_name
+
+    # 5. 键值对格式 "3: ACTION_DOWN"
+    full_pairs = re.findall(r"(\d+)\s*[:=]\s*(ACTION_[A-Z_]+)", response)
+    for num, act_name in reversed(full_pairs):
+        if act_name in reverse_action_dict:
+            return reverse_action_dict[act_name], act_name
+
+    # 6. standalone 数字
     number_matches = re.findall(r"\b(\d+)\b", response)
     for num in reversed(number_matches):
         val = int(num)
         if val in action_map:
             return val, action_map[val]
 
-    # 8. fallback
+    # 7. move/go + direction
+    smart_matches = re.findall(r"\b(?:move|go|walk|run|head|step|proceed)[\s_]*(left|right|up|down|use|nothing|nil)\b", response.lower())
+    if smart_matches:
+        keyword = smart_matches[-1]
+        if keyword in keyword_to_action:
+            return keyword_to_action[keyword], action_map[keyword_to_action[keyword]]
+
+    # 8. keyword fallback
+    keyword_matches = re.findall(r"\b(" + "|".join(re.escape(k) for k in keyword_to_action) + r")\b", response.lower())
+    if keyword_matches:
+        keyword = keyword_matches[-1]
+        return keyword_to_action[keyword], action_map[keyword_to_action[keyword]]
+
     return 0, action_map[0]
 
 
@@ -311,7 +318,10 @@ def query_llm(llm_client: LLMClient,
 
     try:
         # time.sleep(1)
+        # print("====prompt====")
+        # print(prompt)
         response = llm_client.query(prompt, image_path=current_image_path)
+        print("====response====")
         print(response)
 
         reflection_match = re.search(r"Reflection:\s*```(.*?)```", response, re.DOTALL)
@@ -361,7 +371,7 @@ def generate_report(system: RewardSystem, step: int, dir) -> str:
 if __name__ == "__main__":
     current_path = os.path.dirname(os.path.abspath(__file__))
     full_path = os.path.join(os.path.dirname(current_path), "gym_gvgai", "envs", "games")
-    llm_list = {"ollama": ["deepseek-r1:14b","gemma3:12b"] }
+    llm_list = {"ollama": ["gemma3:12b"] }
 
     for game in os.listdir(full_path):
 
@@ -448,10 +458,14 @@ if __name__ == "__main__":
                 env.close()
                 try:
                     img.save(dir+"_"+llm)
+                    with open(f"game_logs_text_{model}.txt", mode="a") as f:
+                        f.write(f"game_name: {game_name}, step_count: {step_count}, winner: {winner}, api: {llm}, total reward: {total_reward}\n")
                 except:
+                    with open(f"game_logs_text_{llm}.txt", mode="a") as f:
+                        f.write(f"game_name: {game_name}, step_count: {step_count}, winner: {winner}, api: {llm}, total reward: {total_reward}\n")
                     print("cannot save")
-                with open(f"game_logs_text_{llm}.txt", mode="a") as f:
-                    f.write(f"game_name: {game_name}, step_count: {step_count}, winner: {winner}, api: {llm}, total reward: {total_reward}, end_state: {game_state}\n")
+                with open(f"game_logs_text_{model}.txt", mode="a") as f:
+                    f.write(f"game_name: {game_name}, step_count: {step_count}, winner: {winner}, api: {llm}, total reward: {total_reward}\n")
                 generate_report(reward_system, step_count,dir+"_"+llm)
 
     
