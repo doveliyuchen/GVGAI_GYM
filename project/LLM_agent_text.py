@@ -372,9 +372,9 @@ if __name__ == "__main__":
     current_path = os.path.dirname(os.path.abspath(__file__))
     full_path = os.path.join(os.path.dirname(current_path), "gym_gvgai", "envs", "games")
     llm_list = {"ollama": ["gemma3:12b"] }
-    llm_lst = ['qwen']
+    llm_lst = ['qwen', 'openai', 'deepseek']
 
-    for game in os.listdir(full_path):
+    for game in os.listdir(full_path)[51:]:
 
         env_name = "gvgai-"+game[:-3]+"-lvl0-v0"
 
@@ -382,10 +382,7 @@ if __name__ == "__main__":
         state = env.reset()
         done = False
 
-        # VGDL rule
-        game_name = env.spec.id.replace("gvgai-", "").split("-")[0] + "_v0"
-
-        game_dir = os.path.join(os.path.dirname(current_path), "gym_gvgai", "envs", "games", game_name)
+        game_dir = os.path.join(os.path.dirname(current_path), "gym_gvgai", "envs", "games", game)
 
         vgdl_rule_file = next((os.path.join(game_dir, f) for f in os.listdir(game_dir)
                                if f.endswith(".txt") and "lvl" not in f), None)
@@ -398,7 +395,6 @@ if __name__ == "__main__":
             vgdl_rules = f.read().splitlines()
         with open(level_layout_file, "r") as f:
             level_layout = f.read()
-
 
         vgdl_grid, avatar_pos = parse_vgdl_level(level_layout)
         h, w = vgdl_grid.shape
@@ -413,7 +409,7 @@ if __name__ == "__main__":
         for llm in llm_lst:
             try: 
 
-                llm, = llm_list.keys()
+                # llm, = llm_list.keys()
                 llm_client = LLMClient(llm,model=model)
                 llm_dir = re.search(r"(.*?):", model)
             except:
@@ -436,7 +432,7 @@ if __name__ == "__main__":
             if llm_dir:
                 llm_dir = llm_dir.group(1).strip() 
             # llm_dir = re.search(r"(.*?):", model).group(1).strip()
-            dir = create_directory(f"img_{llm_dir}/"+game_name)
+            dir = create_directory(f"img_{llm_dir}/"+game)
 
             try:
 
@@ -448,7 +444,6 @@ if __name__ == "__main__":
                     reward_system.update(action, reward)
                     last_state = game_state
                     game_state = [row.split(',') for row in info["ascii"].splitlines()]
-
 
                     total_reward += reward
                     print(f"Received Reward: {reward}")
@@ -464,13 +459,12 @@ if __name__ == "__main__":
                 try:
                     img.save(dir+"_"+llm)
                     with open(f"game_logs_text_{model}.txt", mode="a") as f:
-                        f.write(f"game_name: {game_name}, step_count: {step_count}, winner: {winner}, api: {llm}, total reward: {total_reward}\n")
+                        f.write(f"game_name: {game}, step_count: {step_count}, winner: {winner}, api: {llm}, total reward: {total_reward}\n")
                 except:
                     with open(f"game_logs_text_{llm}.txt", mode="a") as f:
-                        f.write(f"game_name: {game_name}, step_count: {step_count}, winner: {winner}, api: {llm}, total reward: {total_reward}\n")
+                        f.write(f"game_name: {game}, step_count: {step_count}, winner: {winner}, api: {llm}, total reward: {total_reward}\n")
                     print("cannot save")
-                with open(f"game_logs_text_{model}.txt", mode="a") as f:
-                    f.write(f"game_name: {game_name}, step_count: {step_count}, winner: {winner}, api: {llm}, total reward: {total_reward}\n")
+
                 generate_report(reward_system, step_count,dir+"_"+llm)
 
     

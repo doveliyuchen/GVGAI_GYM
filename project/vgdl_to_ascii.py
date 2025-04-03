@@ -3,13 +3,22 @@
 import re
 import string
 from collections import defaultdict
+from typing import Union
 
-def parse_vgdl(vgdl_text):
+def parse_vgdl(vgdl_text: Union[str, list]):
     sprite_names = set()
     level_mapping = defaultdict(list)
 
-    # Extract SpriteSet
-    sprite_section = re.search(r"SpriteSet(.*?)LevelMapping", vgdl_text, re.DOTALL)
+    # Handle input type
+    if isinstance(vgdl_text, list):
+        vgdl_lines = vgdl_text
+        vgdl_string = '\n'.join(vgdl_text)
+    else:
+        vgdl_string = vgdl_text
+        vgdl_lines = vgdl_text.split('\n')
+
+    # Extract SpriteSet using string
+    sprite_section = re.search(r"SpriteSet(.*?)LevelMapping", vgdl_string, re.DOTALL)
     if sprite_section:
         lines = sprite_section.group(1).split('\n')
         parent_stack = []
@@ -29,10 +38,9 @@ def parse_vgdl(vgdl_text):
             sprite_names.add(full_name)
             parent_stack.append((indent, full_name))
 
-    # Extract LevelMapping
-    lines = vgdl_text.split('\n')
+    # Extract LevelMapping using lines
     in_level_mapping = False
-    for line in lines:
+    for line in vgdl_lines:
         if 'LevelMapping' in line:
             in_level_mapping = True
             continue
@@ -62,7 +70,7 @@ def convert_state(state, sprite_to_char):
         result.append(line)
     return '\n'.join(result)
 
-def generate_mapping_and_ascii(state, vgdl_text):
+def generate_mapping_and_ascii(state, vgdl_text: Union[str, list]):
     sprite_names, level_mapping = parse_vgdl(vgdl_text)
 
     sprite_to_char = {}
@@ -86,3 +94,32 @@ def generate_mapping_and_ascii(state, vgdl_text):
 
     ascii_level = convert_state(state, sprite_to_char)
     return sprite_to_char, ascii_level
+
+if __name__ == "__main__":
+    import argparse
+    import json
+    import numpy as np
+
+    parser = argparse.ArgumentParser(description="Convert VGDL state to ASCII using VGDL rules.")
+    parser.add_argument("--state", type=str, required=True, help="Path to state .json or .npy file")
+    parser.add_argument("--vgdl", type=str, required=True, help="Path to VGDL rules .txt file")
+
+    args = parser.parse_args()
+
+    if args.state.endswith(".json"):
+        with open(args.state, "r") as f:
+            state = json.load(f)
+    else:
+        state = np.load(args.state, allow_pickle=True)
+
+    with open(args.vgdl, "r") as f:
+        vgdl_text = f.read()
+
+    mapping, ascii_map = generate_mapping_and_ascii(state, vgdl_text)
+
+    print("\n=== SPRITE MAPPING ===")
+    for sprite, char in mapping.items():
+        print(f"{sprite:15} => '{char}'")
+
+    print("\n=== ASCII LEVEL ===")
+    print(ascii_map)
