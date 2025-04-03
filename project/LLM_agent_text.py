@@ -372,6 +372,7 @@ if __name__ == "__main__":
     current_path = os.path.dirname(os.path.abspath(__file__))
     full_path = os.path.join(os.path.dirname(current_path), "gym_gvgai", "envs", "games")
     llm_list = {"ollama": ["gemma3:12b"] }
+    llm_lst = ['qwen']
 
     for game in os.listdir(full_path):
 
@@ -409,11 +410,14 @@ if __name__ == "__main__":
             action_mapping = {i: f"Action {i}" for i in available_actions}
 
 
-        for model in llm_list["ollama"]:
+        for llm in llm_lst:
+            try: 
 
-            llm, = llm_list.keys()
-
-            llm_client = LLMClient(llm,model=model)
+                llm, = llm_list.keys()
+                llm_client = LLMClient(llm,model=model)
+                llm_dir = re.search(r"(.*?):", model)
+            except:
+                llm_client = LLMClient(llm)
             state = env.reset()
             done = False
             reflection_mgr = ReflectionManager()
@@ -427,7 +431,8 @@ if __name__ == "__main__":
             game_state = vgdl_grid
             last_state_img = None
             game_state_img = None
-            llm_dir = re.search(r"(.*?):", model)  # 捕获冒号前的内容
+            llm_dir = None
+
             if llm_dir:
                 llm_dir = llm_dir.group(1).strip() 
             # llm_dir = re.search(r"(.*?):", model).group(1).strip()
