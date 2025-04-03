@@ -463,7 +463,7 @@ if __name__ == "__main__":
                 except:
                     with open(f"game_logs_text_{llm}.txt", mode="a") as f:
                         f.write(f"game_name: {game}, step_count: {step_count}, winner: {winner}, api: {llm}, total reward: {total_reward}\n")
-                    print("cannot save")
+
 
                 generate_report(reward_system, step_count,dir+"_"+llm)
 
