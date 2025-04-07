@@ -7,10 +7,10 @@ import pygame
 import matplotlib.pyplot as plt
 from llm.client import LLMClient
 from collections import defaultdict, Counter
-from typing import Iterable, Tuple, Optional
+from typing import Iterable, Tuple, Optional, Dict
 import imageio
 import time
-import time
+from vgdl_to_ascii import generate_mapping_and_ascii
 
 def create_directory(base_dir='imgs'):
     """
@@ -69,9 +69,6 @@ def show_state(env, step, name, info, directory, vgdl_representation=None):
     img = env.render(mode='rgb_array')
     plt.imshow(img)
 
-    img = env.render(mode='rgb_array')
-    plt.imshow(img)
-
 
 
     plt.title(f"{name} | Step: {step} {info}")
@@ -109,10 +106,6 @@ def parse_vgdl_level(vgdl_level):
     if isinstance(vgdl_level, str):
         vgdl_level = vgdl_level.splitlines()
 
-    # 如果输入是字符串，则按换行符拆分成多行（换行符会被删除）
-    if isinstance(vgdl_level, str):
-        vgdl_level = vgdl_level.splitlines()
-
     max_width = max(len(row) for row in vgdl_level)
     padded_level = [row.ljust(max_width, ".") for row in vgdl_level]
 
@@ -123,8 +116,6 @@ def parse_vgdl_level(vgdl_level):
             avatar_pos = (x, y)
             break
 
-    # 每一行被转换为一个字符列表，从而构成一个二维矩阵
-    return np.array([list(row) for row in padded_level]), avatar_pos
     # 每一行被转换为一个字符列表，从而构成一个二维矩阵
     return np.array([list(row) for row in padded_level]), avatar_pos
 
@@ -165,83 +156,59 @@ def build_enhanced_prompt(vgdl_rules: str,
                           action_map: dict,
                           reward_system: RewardSystem,
                           reflection_mgr: ReflectionManager,
+                          sprite_mapping: Optional[Dict[str, str]],
                           current_image_path: Optional[str] = None,
                           last_image_path: Optional[str] = None,
                           reflection = False, reward = False ) -> str:
-    """Build prompt with layout and reflection history"""
-
-    last_action = None
-    last_reward = None
-    if reward_system.action_history:
-        last_action = reward_system.action_history[-1]
-        last_reward = reward_system.reward_history[-1]
-    last_action_desc = action_map.get(last_action, "None") if last_action is not None else "None"
-    last_reward_desc = action_map.get(last_reward, "None") if last_reward is not None else "None"
-
+    last_action = reward_system.action_history[-1] if reward_system.action_history else None
+    last_reward = reward_system.reward_history[-1] if reward_system.reward_history else None
+    last_action_desc = action_map.get(last_action, "") if last_action is not None else ""
+    last_reward_desc = action_map.get(last_reward, "") if last_reward is not None else ""
+    mapping_text = build_mapping_text(sprite_mapping, state) if sprite_mapping else ""
     formating = f'''
-    You are controlling avatar A, try to win the game with *meaningful action*.\n
+    You are controlling avatar A, try to win the game with *meaningful action*.
     Goal: Try to interact with the game by analyzing the game state and learn to play and win it. 
-    Respond in this format with only *ONE* action with a sentence of analysis of your current position:\n
-    ``` Action:<action number> ``` \n'''
-    # You cannot ask questions after your chosen action.
-
+    Respond in this format with only *ONE* action with a sentence of analysis of your current position:
+    ``` Action:<action number> ``` 
+    '''
     reflection_format =  ""
-    guidance = ""
     reflection_section = ""
     if reflection:
         reflection_format = ''' Reflection: ```<your strategy reflection>```  '''
         if reflection_mgr.history:
             reflection_section = f"\n=== Reflection History ===\n{reflection_mgr.get_formatted_history()}"
-
     base =f'''
     === Game Rules ===
     {vgdl_rules}
-
 
     === Last State ===
     {last_state}
 
     === Current State ===
-    You are "avatar"
     {state}
    
     === Last Action ===
     {last_action}
 
+    === Representation Mapping ===
+    {mapping_text}
+
     === Available Actions ===
     {chr(10).join(f'{k}: {v}' for k, v in action_map.items())}
     '''
-
-    if reward:
-        reward_prompt = f'''
+    reward_prompt = f'''
          === Last Reward ===
          {last_reward} ({last_reward_desc})
-        '''
-    else:
-        reward_prompt = ''
-
-#     guidance = f'''
-# State Awareness: Recognize the differences between states and identify the optimal action to transition to a desired state. Consider this process operates within a fully defined Markov framework.
-# Action Consistency: Be mindful that your current decision may negate the effects of the previous action. Aim to maintain consistency and avoid contradictory moves.
-# Meaningful Decisions: Ensure that your actions are purposeful. For instance, moving against a wall is unproductive and should be avoided.
-# '''
-
+        ''' if reward else ''
+    guidance = "\nState guidance placeholder...\n"
     return f"{formating}{reflection_format}{base}{reward_prompt}{reflection_section}\n{guidance}\n"
-
-# ====action match======
-
-
-# 修改为优先匹配 "action" + 任意符号 + 动作（数字 或 ACTION_XXX），而不是 "ANSWER:"
 
 def parse_action_from_response(response: str, action_map: dict) -> Tuple[int, str]:
     reverse_action_dict = {v: k for k, v in action_map.items()}
-
     keyword_to_action = {}
     for aid, aname in action_map.items():
         for word in aname.replace("ACTION_", "").lower().split("_"):
             keyword_to_action[word] = aid
-
-    # 1. 优先匹配 action + 任意符号 + 动作值（数字或ACTION_XXX）
     action_stmt_match = re.findall(r"\baction\s*[:=~\-]?\s*(\d+|ACTION_[A-Z_]+)", response, re.IGNORECASE)
     for val in reversed(action_stmt_match):
         if val.isdigit():
@@ -250,13 +217,9 @@ def parse_action_from_response(response: str, action_map: dict) -> Tuple[int, st
                 return num, action_map[num]
         elif val.upper() in reverse_action_dict:
             return reverse_action_dict[val.upper()], val.upper()
-
-    # 2. 明确表达 ACTION_NIL
     nil_match = re.findall(r"ACTION[_\\]*NIL", response, re.IGNORECASE)
     if nil_match:
         return 0, action_map[0]
-
-    # 3. 代码块内容（数字、ACTION、关键词）
     code_blocks = re.findall(r"```(?:python)?\s*([\s\S]*?)```", response)
     for block in reversed(code_blocks):
         num_match = re.findall(r"\b(\d+)\b", block)
@@ -264,54 +227,39 @@ def parse_action_from_response(response: str, action_map: dict) -> Tuple[int, st
             num = int(val)
             if num in action_map:
                 return num, action_map[num]
-
         action_words = re.findall(r"ACTION_[A-Z_]+", block)
         for act_name in reversed(action_words):
             if act_name in reverse_action_dict:
                 return reverse_action_dict[act_name], act_name
-
         word_matches = re.findall(r"\b(" + "|".join(re.escape(k) for k in keyword_to_action) + r")\b", block.lower())
         for word in reversed(word_matches):
             aid = keyword_to_action[word]
             return aid, action_map[aid]
-
-    # 4. 全局 ACTION_XXX
     action_words = re.findall(r"ACTION_[A-Z_]+", response)
     for act_name in reversed(action_words):
         if act_name in reverse_action_dict:
             return reverse_action_dict[act_name], act_name
-
-    # 5. 键值对格式 "3: ACTION_DOWN"
     full_pairs = re.findall(r"(\d+)\s*[:=]\s*(ACTION_[A-Z_]+)", response)
     for num, act_name in reversed(full_pairs):
         if act_name in reverse_action_dict:
             return reverse_action_dict[act_name], act_name
-
-    # 6. standalone 数字
     number_matches = re.findall(r"\b(\d+)\b", response)
     for num in reversed(number_matches):
         val = int(num)
         if val in action_map:
             return val, action_map[val]
-
-    # 7. move/go + direction
     smart_matches = re.findall(r"\b(?:move|go|walk|run|head|step|proceed)[\s_]*(left|right|up|down|use|nothing|nil)\b", response.lower())
     if smart_matches:
         keyword = smart_matches[-1]
         if keyword in keyword_to_action:
             return keyword_to_action[keyword], action_map[keyword_to_action[keyword]]
-
-    # 8. keyword fallback
     keyword_matches = re.findall(r"\b(" + "|".join(re.escape(k) for k in keyword_to_action) + r")\b", response.lower())
     if keyword_matches:
         keyword = keyword_matches[-1]
         return keyword_to_action[keyword], action_map[keyword_to_action[keyword]]
-
     return 0, action_map[0]
 
-
-
-def query_llm(llm_client: LLMClient,
+def query_llm(llm_client,
               vgdl_rules: str,
               current_state: str,
               last_state: str,
@@ -321,41 +269,23 @@ def query_llm(llm_client: LLMClient,
               step: int,
               current_image_path: Optional[str] = None,
               last_image_path: Optional[str] = None,
+              sprite_mapping: Optional[Dict[str, str]] = None,
               reflection = False,
               reward = False) -> Tuple[int, str]:
     prompt = build_enhanced_prompt(vgdl_rules, current_state, last_state, action_map,
-                                   reward_system, reflection_mgr, current_image_path, last_image_path,reflection,reward)
-
+                                   reward_system, reflection_mgr, current_image_path, last_image_path,sprite_mapping, reflection, reward)
     try:
-        # time.sleep(1)
-        # print("====prompt====")
-        # print(prompt)
         response = llm_client.query(prompt, image_path=current_image_path)
         print("====response====")
         print(response)
-
         reflection_match = re.search(r"Reflection:\s*```(.*?)```", response, re.DOTALL)
-
-
-        # 初始化 action 变量
-        action = 0  # 默认值
-
         action, action_name = parse_action_from_response(response, action_map)
-  
-        reflection = reflection_match.group(1).strip() if reflection_match else ""
-
-        # 查找 Reflection（策略思考）
-        reflection_match = re.search(r"Reflection:\s*```(.*?)```", response, re.DOTALL)
         reflection_text = reflection_match.group(1).strip() if reflection_match else ""
-
-        # 打印调试信息
         print(f"\n=== Step {step} ===")
         print(f"Selected Action: {action} ({action_name})")
-        if reflection:
-            print(f"Strategy Reflection: {reflection[:700]}...")
-
+        if reflection_text:
+            print(f"Strategy Reflection: {reflection_text[:700]}...")
         return action, reflection_text
-
     except Exception as e:
         print(f"LLM query error: {str(e)}")
         return 0, " "
@@ -381,16 +311,21 @@ def generate_report(system: RewardSystem, step: int, dir) -> str:
 if __name__ == "__main__":
     current_path = os.path.dirname(os.path.abspath(__file__))
     full_path = os.path.join(os.path.dirname(current_path), "gym_gvgai", "envs", "games")
-    llm_list = ["ollama"]
+    llm_list = {"ollama": ["gemma3:12b"] }
+    llm_lst = ['qwen']
 
     for game in os.listdir(full_path):
+
         env_name = "gvgai-"+game[:-3]+"-lvl0-v0"
 
         env = gvgai.make(env_name)
         state = env.reset()
         done = False
 
-        game_dir = os.path.join(os.path.dirname(current_path), "gym_gvgai", "envs", "games", game)
+        # VGDL rule
+        game_name = env.spec.id.replace("gvgai-", "").split("-")[0] + "_v0"
+
+        game_dir = os.path.join(os.path.dirname(current_path), "gym_gvgai", "envs", "games", game_name)
 
         vgdl_rule_file = next((os.path.join(game_dir, f) for f in os.listdir(game_dir)
                                if f.endswith(".txt") and "lvl" not in f), None)
@@ -404,6 +339,7 @@ if __name__ == "__main__":
         with open(level_layout_file, "r") as f:
             level_layout = f.read()
 
+
         vgdl_grid, avatar_pos = parse_vgdl_level(level_layout)
         h, w = vgdl_grid.shape
 
@@ -414,9 +350,14 @@ if __name__ == "__main__":
             action_mapping = {i: f"Action {i}" for i in available_actions}
 
 
-        for llm in llm_list:
-
-            llm_client = LLMClient(llm)
+        for llm in llm_lst:
+            try: 
+                # llm, = llm_list.keys()
+                llm_client = LLMClient(llm,model=model)
+                llm_dir = re.search(r"(.*?):", model)
+            except:
+                
+                llm_client = LLMClient(llm)
             state = env.reset()
             done = False
             reflection_mgr = ReflectionManager()
@@ -430,19 +371,32 @@ if __name__ == "__main__":
             game_state = vgdl_grid
             last_state_img = None
             game_state_img = None
-            dir = create_directory("img_text/"+game_name)
+            llm_dir = None
+            sprite_map = None
+
+            if llm_dir:
+                llm_dir = llm_dir.group(1).strip() 
+            # llm_dir = re.search(r"(.*?):", model).group(1).strip()
+            dir = create_directory(f"img_{llm_dir}/"+game_name)
 
             try:
 
                 while not done:
 
                     action, reflection = query_llm(llm_client, vgdl_rules,game_state, last_state, action_mapping, reward_system,
-                                                   reflection_mgr, step_count, reflection = False)
+                                                   reflection_mgr, step_count, sprite_mapping=sprite_map,reflection = False)
                     next_state, reward, done, info = env.step(action)
                     reward_system.update(action, reward)
                     last_state = game_state
-                    game_state = info["ascii"]
+                    game_state = [row.split(',') for row in info["ascii"].splitlines()]
+                    sprite_map, ascii_layout = generate_mapping_and_ascii(game_state, vgdl_rules)
+                    game_state = ascii_layout
+                    print("====CHAR MAP====")
+                    for k, v in sprite_map.items():
+                        print(f"{k:15} => '{v}'")
 
+                    print("====ASCII LAYOUT====")
+                    print(ascii_layout)
 
                     total_reward += reward
                     print(f"Received Reward: {reward}")
@@ -457,10 +411,14 @@ if __name__ == "__main__":
                 env.close()
                 try:
                     img.save(dir+"_"+llm)
+                    with open(f"game_logs_text_{model}.txt", mode="a") as f:
+                        f.write(f"game_name: {game_name}, step_count: {step_count}, winner: {winner}, api: {llm}, total reward: {total_reward}\n")
                 except:
+                    with open(f"game_logs_text_{llm}.txt", mode="a") as f:
+                        f.write(f"game_name: {game_name}, step_count: {step_count}, winner: {winner}, api: {llm}, total reward: {total_reward}\n")
                     print("cannot save")
-                with open("game_logs_text.txt", mode="a") as f:
-                    f.write(f"game_name: {game_name}, step_count: {step_count}, winner: {winner}, api: {llm}\n")
+                with open(f"game_logs_text_{model}.txt", mode="a") as f:
+                    f.write(f"game_name: {game_name}, step_count: {step_count}, winner: {winner}, api: {llm}, total reward: {total_reward}\n")
                 generate_report(reward_system, step_count,dir+"_"+llm)
 
     
