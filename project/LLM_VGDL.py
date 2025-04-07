@@ -164,7 +164,7 @@ def build_enhanced_prompt(vgdl_rules: str,
     last_reward = reward_system.reward_history[-1] if reward_system.reward_history else None
     last_action_desc = action_map.get(last_action, "") if last_action is not None else ""
     last_reward_desc = action_map.get(last_reward, "") if last_reward is not None else ""
-    mapping_text = build_mapping_text(sprite_mapping, state) if sprite_mapping else ""
+    mapping_text = sprite_mapping if sprite_mapping else ""
     formating = f'''
     You are controlling avatar A, try to win the game with *meaningful action*.
     Goal: Try to interact with the game by analyzing the game state and learn to play and win it. 
@@ -391,13 +391,6 @@ if __name__ == "__main__":
                     game_state = [row.split(',') for row in info["ascii"].splitlines()]
                     sprite_map, ascii_layout = generate_mapping_and_ascii(game_state, vgdl_rules)
                     game_state = ascii_layout
-                    print("====CHAR MAP====")
-                    for k, v in sprite_map.items():
-                        print(f"{k:15} => '{v}'")
-
-                    print("====ASCII LAYOUT====")
-                    print(ascii_layout)
-
                     total_reward += reward
                     print(f"Received Reward: {reward}")
 
@@ -417,8 +410,6 @@ if __name__ == "__main__":
                     with open(f"game_logs_text_{llm}.txt", mode="a") as f:
                         f.write(f"game_name: {game_name}, step_count: {step_count}, winner: {winner}, api: {llm}, total reward: {total_reward}\n")
                     print("cannot save")
-                with open(f"game_logs_text_{model}.txt", mode="a") as f:
-                    f.write(f"game_name: {game_name}, step_count: {step_count}, winner: {winner}, api: {llm}, total reward: {total_reward}\n")
                 generate_report(reward_system, step_count,dir+"_"+llm)
 
     
