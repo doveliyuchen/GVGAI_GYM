@@ -381,11 +381,11 @@ def generate_report(system: RewardSystem, step: int, dir) -> str:
 if __name__ == "__main__":
     current_path = os.path.dirname(os.path.abspath(__file__))
     full_path = os.path.join(os.path.dirname(current_path), "gym_gvgai", "envs", "games")
-    llm_list= ['ollama']
-    model = 'deepseek-r1:14b'
+    llm_list= ['qwen','openai','deepseek']
+    # model = 'deepseek-r1:14b'
 
-    for game in os.listdir(full_path):
-        game= 'sokoban_v0'
+    for game in os.listdir(full_path)[86:]:
+        print(game)
         env_name = "gvgai-"+game[:-3]+"-lvl0-v0"
 
         env = gvgai.make(env_name)
@@ -418,7 +418,7 @@ if __name__ == "__main__":
 
         for llm in llm_list:
 
-            llm_client = LLMClient(llm,model=model)
+            llm_client = LLMClient(llm)
             state = env.reset()
             done = False
             reflection_mgr = ReflectionManager()
@@ -432,7 +432,7 @@ if __name__ == "__main__":
             game_state = vgdl_grid
             last_state_img = None
             game_state_img = None
-            dir = create_directory("img_text/"+game)
+            dir = create_directory("img_text3/"+game)
 
             try:
 
@@ -461,10 +461,10 @@ if __name__ == "__main__":
                     img.save(dir+"_"+llm)
                 except:
                     print("cannot save")
-                with open("game_logs_text.txt", mode="a") as f:
+                with open(f"game_logs_text_{llm}.txt", mode="a") as f:
                     f.write(f"game_name: {game}, step_count: {step_count}, winner: {winner}, api: {llm}\n")
                 generate_report(reward_system, step_count,dir+"_"+llm)
-                break
+
 
     
 
