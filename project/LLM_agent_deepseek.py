@@ -381,10 +381,10 @@ def generate_report(system: RewardSystem, step: int, dir) -> str:
 if __name__ == "__main__":
     current_path = os.path.dirname(os.path.abspath(__file__))
     full_path = os.path.join(os.path.dirname(current_path), "gym_gvgai", "envs", "games")
-    llm_list= ['qwen','openai']
+    llm_list= ['deepseek']
     # model = 'deepseek-r1:14b'
 
-    for game in os.listdir(full_path)[92:]:
+    for game in os.listdir(full_path)[91:]:
         print(game)
         env_name = "gvgai-"+game[:-3]+"-lvl0-v0"
 
