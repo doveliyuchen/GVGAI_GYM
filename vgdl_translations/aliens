@@ -1,0 +1,89 @@
+Game Title: Space Defense
+
+Game Objective and Win/Loss Conditions:
+- The player controls a spaceship (avatar) that must defend white planetary bases from alien invaders.
+- You lose immediately if your avatar is destroyed (when avatar count reaches 0).
+- You win when all alien spawn portals and existing aliens are eliminated (when both portal and alien counts reach 0).
+
+Player Controls and Capabilities:
+- The player controls a spaceship (avatar) that can move and fire upward-moving missiles (sam type).
+- The avatar automatically steps back when reaching the edge of the screen (EOS = Edge Of Screen).
+
+Game Entities and Their Properties:
+
+1. Background:
+   - Space background (hidden, doesn't affect gameplay)
+   - Appears wherever there isn't another object
+
+2. Bases:
+   - White planetary bases (immovable objects)
+   - Represent what the player must protect
+
+3. Avatar (Player Spaceship):
+   - Can fire blue missiles (sam) upward
+   - Moves horizontally (FlakAvatar type)
+   - Appears as a spaceship image
+
+4. Missiles:
+   - SAM (blue):
+     * Moves upward at normal speed (1.0)
+     * Singleton (only one can exist at a time)
+   - Bomb (red):
+     * Moves downward at half speed (0.5)
+     * Fired by aliens
+
+5. Aliens:
+   - Two types:
+     * Green aliens: faster movement (speed 0.8), spawn from fast portals
+     * Blue aliens: same speed but spawn from slow portals
+   - Behavior:
+     * Move horizontally at 0.8 speed
+     * Turn around at screen edges
+     * Have a 1% chance each frame to drop bombs downward
+     * Can only drop bombs every 3 frames (cooldown)
+
+6. Portals (Alien Spawn Points):
+   - Two types (invisible but shown as portal images for mapping):
+     * Slow portals: spawn blue aliens every 16 frames (max 20 total)
+     * Fast portals: spawn green aliens every 12 frames (max 20 total)
+
+Interaction Rules:
+
+1. Screen Edge Interactions:
+   - Avatar: Steps back when hitting edge
+   - Aliens: Turn around when hitting edge
+   - Missiles: Destroyed when hitting edge
+
+2. Collision Rules:
+   - Base hit by alien bomb: Both are destroyed
+   - Base hit by player missile (sam): Both are destroyed, player gains 1 point
+   - Base hit by alien: Alien is destroyed (no score change)
+   - Avatar hit by alien: Both are destroyed, player loses 1 point
+   - Avatar hit by bomb: Both are destroyed, player loses 1 point
+   - Alien hit by player missile (sam): Both are destroyed, player gains 2 points
+
+Level Layout and Spatial Relationships:
+- The game uses a grid system where each square is 32x32 pixels
+- Symbols represent objects placed on top of the background:
+  * '0': Planetary base on background
+  * '1': Slow alien spawn portal on background
+  * '2': Fast alien spawn portal on background
+  * 'A': Player avatar on background
+- The exact positions depend on level design, but key relationships are:
+  1. Bases are typically placed at the bottom (as they're what you protect)
+  2. Portals are typically placed at the top (as they spawn aliens)
+  3. The avatar starts somewhere above the bases but below the portals
+
+Scoring System:
+- +1 for hitting a base with your missile (accidental friendly fire)
+- -1 for your avatar being hit by an alien or bomb
+- +2 for shooting an alien with your missile
+
+Key Gameplay Mechanics:
+- Strategic positioning is required to:
+  * Shoot aliens while protecting bases
+  * Avoid being hit by bombs or aliens
+  * Manage the singleton missile limitation (only one at a time)
+- Different portal types create varied enemy waves:
+  * Fast portals spawn enemies more frequently (every 12 vs 16 frames)
+  * Total of 40 aliens will spawn (20 from each portal type) unless portals are destroyed first
