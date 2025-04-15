@@ -5,11 +5,12 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 # 1. 读取所有 txt 文件
-txt_files = [f for f in os.listdir('.') if f.endswith('.txt')]
+game_dir = os.listdir('./project')
+txt_files = [f for f in game_dir if f.endswith('.txt')]
 records = []
 
 for txt_file in txt_files:
-    with open(txt_file, 'r') as file:
+    with open(os.path.join('./project', txt_file), 'r') as file:
         lines = file.readlines()
         for line in lines:
             entry = dict(re.findall(r'(\w+): ([^,]+)', line))
