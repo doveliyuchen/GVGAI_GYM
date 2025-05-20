@@ -1,0 +1,117 @@
+[
+  {
+    "role": "user",
+    "content": "=== Game Rules ===\nBasicGame key_handler=Pulse square_size=40\n    SpriteSet\n        floor > Immovable img=newset/floor2\n        hole   > Immovable color=DARKBLUE img=oryx/cspell4\n        avatar > MovingAvatar img=oryx/knight1\n        box    > Passive img=newset/block1 shrinkfactor=0.8\n        wall > Immovable img=oryx/wall3 autotiling=True\n    LevelMapping\n        0 > floor hole\n        1 > floor box\n        w > floor wall\n        A > floor avatar\n        . > floor\n    InteractionSet\n        avatar wall > stepBack\n        box avatar  > bounceForward\n        box wall box  > undoAll\n        box hole    > killSprite scoreChange=1\n    TerminationSet\n        SpriteCounter stype=box    limit=0 win=True\n\nYou are controlling the avatar in a grid-based game.\n\n=== Sprite Mapping ===\navatar -> 'a'\nbackground -> '.'\nfloor hole -> '0'\nfloor box -> '1'\nfloor wall -> 'w'\nfloor -> '.'\nstepBack -> 'avatar wall'\nbounceForward -> 'box avatar'\nundoAll -> 'box wall box'\nkillSprite -> 'box hole'\nwall floor -> '0'\n\n=== Current State ===\n000000000\n00.0....0\n00...1a.0\n0....0..0\n00010...0\n000...0.0\n0000....0\n000000000\n\n=== Available Actions ===\n0: ACTION_NIL\n1: ACTION_LEFT\n2: ACTION_RIGHT\n3: ACTION_DOWN\n4: ACTION_UP\n\n=== Avatar Position ===\n(Left is decreasing x, Right is increasing x, Up is increasing y, Down is decreasing y)(y=5, x=6)\n\nPlease choose the best action and respond in the format: ``` Action:<action number> ```",
+    "model": "openai"
+  },
+  {
+    "role": "assistant",
+    "content": "``` Action:2 ```",
+    "model": "openai"
+  },
+  {
+    "role": "user",
+    "content": "=== Game Rules ===\nBasicGame key_handler=Pulse square_size=40\n    SpriteSet\n        floor > Immovable img=newset/floor2\n        hole   > Immovable color=DARKBLUE img=oryx/cspell4\n        avatar > MovingAvatar img=oryx/knight1\n        box    > Passive img=newset/block1 shrinkfactor=0.8\n        wall > Immovable img=oryx/wall3 autotiling=True\n    LevelMapping\n        0 > floor hole\n        1 > floor box\n        w > floor wall\n        A > floor avatar\n        . > floor\n    InteractionSet\n        avatar wall > stepBack\n        box avatar  > bounceForward\n        box wall box  > undoAll\n        box hole    > killSprite scoreChange=1\n    TerminationSet\n        SpriteCounter stype=box    limit=0 win=True\n\nYou are controlling the avatar in a grid-based game.\n\n=== Sprite Mapping ===\navatar -> 'a'\nbackground -> '.'\nfloor hole -> '0'\nfloor box -> '1'\nfloor wall -> 'w'\nfloor -> '.'\nstepBack -> 'avatar wall'\nbounceForward -> 'box avatar'\nundoAll -> 'box wall box'\nkillSprite -> 'box hole'\nwall floor -> '0'\n\n=== Last State ===\n000000000\n00.0....0\n00...1a.0\n0....0..0\n00010...0\n000...0.0\n0000....0\n000000000\n\n=== Current State ===\n000000000\n00.0....0\n00...1.a0\n0....0..0\n00010...0\n000...0.0\n0000....0\n000000000\n\n=== Last Reward ===\n0.0\n\n=== Available Actions ===\n0: ACTION_NIL\n1: ACTION_LEFT\n2: ACTION_RIGHT\n3: ACTION_DOWN\n4: ACTION_UP\n\n=== Avatar Position ===\n(Left is decreasing x, Right is increasing x, Up is increasing y, Down is decreasing y)(y=5, x=7)\n\nPlease choose the best action and respond in the format: ``` Action:<action number> ```",
+    "model": "openai"
+  },
+  {
+    "role": "assistant",
+    "content": "``` Action:1 ```",
+    "model": "openai"
+  },
+  {
+    "role": "user",
+    "content": "=== Game Rules ===\nBasicGame key_handler=Pulse square_size=40\n    SpriteSet\n        floor > Immovable img=newset/floor2\n        hole   > Immovable color=DARKBLUE img=oryx/cspell4\n        avatar > MovingAvatar img=oryx/knight1\n        box    > Passive img=newset/block1 shrinkfactor=0.8\n        wall > Immovable img=oryx/wall3 autotiling=True\n    LevelMapping\n        0 > floor hole\n        1 > floor box\n        w > floor wall\n        A > floor avatar\n        . > floor\n    InteractionSet\n        avatar wall > stepBack\n        box avatar  > bounceForward\n        box wall box  > undoAll\n        box hole    > killSprite scoreChange=1\n    TerminationSet\n        SpriteCounter stype=box    limit=0 win=True\n\nYou are controlling the avatar in a grid-based game.\n\n=== Sprite Mapping ===\navatar -> 'a'\nbackground -> '.'\nfloor hole -> '0'\nfloor box -> '1'\nfloor wall -> 'w'\nfloor -> '.'\nstepBack -> 'avatar wall'\nbounceForward -> 'box avatar'\nundoAll -> 'box wall box'\nkillSprite -> 'box hole'\nwall floor -> '0'\n\n=== Last State ===\n000000000\n00.0....0\n00...1.a0\n0....0..0\n00010...0\n000...0.0\n0000....0\n000000000\n\n=== Current State ===\n000000000\n00.0....0\n00...1a.0\n0....0..0\n00010...0\n000...0.0\n0000....0\n000000000\n\n=== Last Reward ===\n0.0\n\n=== Available Actions ===\n0: ACTION_NIL\n1: ACTION_LEFT\n2: ACTION_RIGHT\n3: ACTION_DOWN\n4: ACTION_UP\n\n=== Avatar Position ===\n(Left is decreasing x, Right is increasing x, Up is increasing y, Down is decreasing y)(y=5, x=6)\n\nPlease choose the best action and respond in the format: ``` Action:<action number> ```",
+    "model": "openai"
+  },
+  {
+    "role": "assistant",
+    "content": "``` Action:2 ```",
+    "model": "openai"
+  },
+  {
+    "role": "user",
+    "content": "=== Game Rules ===\nBasicGame key_handler=Pulse square_size=40\n    SpriteSet\n        floor > Immovable img=newset/floor2\n        hole   > Immovable color=DARKBLUE img=oryx/cspell4\n        avatar > MovingAvatar img=oryx/knight1\n        box    > Passive img=newset/block1 shrinkfactor=0.8\n        wall > Immovable img=oryx/wall3 autotiling=True\n    LevelMapping\n        0 > floor hole\n        1 > floor box\n        w > floor wall\n        A > floor avatar\n        . > floor\n    InteractionSet\n        avatar wall > stepBack\n        box avatar  > bounceForward\n        box wall box  > undoAll\n        box hole    > killSprite scoreChange=1\n    TerminationSet\n        SpriteCounter stype=box    limit=0 win=True\n\nYou are controlling the avatar in a grid-based game.\n\n=== Sprite Mapping ===\navatar -> 'a'\nbackground -> '.'\nfloor hole -> '0'\nfloor box -> '1'\nfloor wall -> 'w'\nfloor -> '.'\nstepBack -> 'avatar wall'\nbounceForward -> 'box avatar'\nundoAll -> 'box wall box'\nkillSprite -> 'box hole'\nwall floor -> '0'\n\n=== Last State ===\n000000000\n00.0....0\n00...1a.0\n0....0..0\n00010...0\n000...0.0\n0000....0\n000000000\n\n=== Current State ===\n000000000\n00.0....0\n00...1.a0\n0....0..0\n00010...0\n000...0.0\n0000....0\n000000000\n\n=== Last Reward ===\n0.0\n\n=== Available Actions ===\n0: ACTION_NIL\n1: ACTION_LEFT\n2: ACTION_RIGHT\n3: ACTION_DOWN\n4: ACTION_UP\n\n=== Avatar Position ===\n(Left is decreasing x, Right is increasing x, Up is increasing y, Down is decreasing y)(y=5, x=7)\n\nPlease choose the best action and respond in the format: ``` Action:<action number> ```",
+    "model": "openai"
+  },
+  {
+    "role": "assistant",
+    "content": "``` Action:1 ```",
+    "model": "openai"
+  },
+  {
+    "role": "user",
+    "content": "=== Game Rules ===\nBasicGame key_handler=Pulse square_size=40\n    SpriteSet\n        floor > Immovable img=newset/floor2\n        hole   > Immovable color=DARKBLUE img=oryx/cspell4\n        avatar > MovingAvatar img=oryx/knight1\n        box    > Passive img=newset/block1 shrinkfactor=0.8\n        wall > Immovable img=oryx/wall3 autotiling=True\n    LevelMapping\n        0 > floor hole\n        1 > floor box\n        w > floor wall\n        A > floor avatar\n        . > floor\n    InteractionSet\n        avatar wall > stepBack\n        box avatar  > bounceForward\n        box wall box  > undoAll\n        box hole    > killSprite scoreChange=1\n    TerminationSet\n        SpriteCounter stype=box    limit=0 win=True\n\nYou are controlling the avatar in a grid-based game.\n\n=== Sprite Mapping ===\navatar -> 'a'\nbackground -> '.'\nfloor hole -> '0'\nfloor box -> '1'\nfloor wall -> 'w'\nfloor -> '.'\nstepBack -> 'avatar wall'\nbounceForward -> 'box avatar'\nundoAll -> 'box wall box'\nkillSprite -> 'box hole'\nwall floor -> '0'\n\n=== Last State ===\n000000000\n00.0....0\n00...1.a0\n0....0..0\n00010...0\n000...0.0\n0000....0\n000000000\n\n=== Current State ===\n000000000\n00.0....0\n00...1a.0\n0....0..0\n00010...0\n000...0.0\n0000....0\n000000000\n\n=== Last Reward ===\n0.0\n\n=== Available Actions ===\n0: ACTION_NIL\n1: ACTION_LEFT\n2: ACTION_RIGHT\n3: ACTION_DOWN\n4: ACTION_UP\n\n=== Avatar Position ===\n(Left is decreasing x, Right is increasing x, Up is increasing y, Down is decreasing y)(y=5, x=6)\n\nPlease choose the best action and respond in the format: ``` Action:<action number> ```",
+    "model": "openai"
+  },
+  {
+    "role": "assistant",
+    "content": "``` Action:2 ```",
+    "model": "openai"
+  },
+  {
+    "role": "user",
+    "content": "=== Game Rules ===\nBasicGame key_handler=Pulse square_size=40\n    SpriteSet\n        floor > Immovable img=newset/floor2\n        hole   > Immovable color=DARKBLUE img=oryx/cspell4\n        avatar > MovingAvatar img=oryx/knight1\n        box    > Passive img=newset/block1 shrinkfactor=0.8\n        wall > Immovable img=oryx/wall3 autotiling=True\n    LevelMapping\n        0 > floor hole\n        1 > floor box\n        w > floor wall\n        A > floor avatar\n        . > floor\n    InteractionSet\n        avatar wall > stepBack\n        box avatar  > bounceForward\n        box wall box  > undoAll\n        box hole    > killSprite scoreChange=1\n    TerminationSet\n        SpriteCounter stype=box    limit=0 win=True\n\nYou are controlling the avatar in a grid-based game.\n\n=== Sprite Mapping ===\navatar -> 'a'\nbackground -> '.'\nfloor hole -> '0'\nfloor box -> '1'\nfloor wall -> 'w'\nfloor -> '.'\nstepBack -> 'avatar wall'\nbounceForward -> 'box avatar'\nundoAll -> 'box wall box'\nkillSprite -> 'box hole'\nwall floor -> '0'\n\n=== Last State ===\n000000000\n00.0....0\n00...1a.0\n0....0..0\n00010...0\n000...0.0\n0000....0\n000000000\n\n=== Current State ===\n000000000\n00.0....0\n00...1.a0\n0....0..0\n00010...0\n000...0.0\n0000....0\n000000000\n\n=== Last Reward ===\n0.0\n\n=== Available Actions ===\n0: ACTION_NIL\n1: ACTION_LEFT\n2: ACTION_RIGHT\n3: ACTION_DOWN\n4: ACTION_UP\n\n=== Avatar Position ===\n(Left is decreasing x, Right is increasing x, Up is increasing y, Down is decreasing y)(y=5, x=7)\n\nPlease choose the best action and respond in the format: ``` Action:<action number> ```",
+    "model": "openai"
+  },
+  {
+    "role": "assistant",
+    "content": "``` Action:1 ```",
+    "model": "openai"
+  },
+  {
+    "role": "user",
+    "content": "=== Game Rules ===\nBasicGame key_handler=Pulse square_size=40\n    SpriteSet\n        floor > Immovable img=newset/floor2\n        hole   > Immovable color=DARKBLUE img=oryx/cspell4\n        avatar > MovingAvatar img=oryx/knight1\n        box    > Passive img=newset/block1 shrinkfactor=0.8\n        wall > Immovable img=oryx/wall3 autotiling=True\n    LevelMapping\n        0 > floor hole\n        1 > floor box\n        w > floor wall\n        A > floor avatar\n        . > floor\n    InteractionSet\n        avatar wall > stepBack\n        box avatar  > bounceForward\n        box wall box  > undoAll\n        box hole    > killSprite scoreChange=1\n    TerminationSet\n        SpriteCounter stype=box    limit=0 win=True\n\nYou are controlling the avatar in a grid-based game.\n\n=== Sprite Mapping ===\navatar -> 'a'\nbackground -> '.'\nfloor hole -> '0'\nfloor box -> '1'\nfloor wall -> 'w'\nfloor -> '.'\nstepBack -> 'avatar wall'\nbounceForward -> 'box avatar'\nundoAll -> 'box wall box'\nkillSprite -> 'box hole'\nwall floor -> '0'\n\n=== Last State ===\n000000000\n00.0....0\n00...1.a0\n0....0..0\n00010...0\n000...0.0\n0000....0\n000000000\n\n=== Current State ===\n000000000\n00.0....0\n00...1a.0\n0....0..0\n00010...0\n000...0.0\n0000....0\n000000000\n\n=== Last Reward ===\n0.0\n\n=== Available Actions ===\n0: ACTION_NIL\n1: ACTION_LEFT\n2: ACTION_RIGHT\n3: ACTION_DOWN\n4: ACTION_UP\n\n=== Avatar Position ===\n(Left is decreasing x, Right is increasing x, Up is increasing y, Down is decreasing y)(y=5, x=6)\n\nPlease choose the best action and respond in the format: ``` Action:<action number> ```",
+    "model": "openai"
+  },
+  {
+    "role": "assistant",
+    "content": "``` Action:2 ```",
+    "model": "openai"
+  },
+  {
+    "role": "user",
+    "content": "=== Game Rules ===\nBasicGame key_handler=Pulse square_size=40\n    SpriteSet\n        floor > Immovable img=newset/floor2\n        hole   > Immovable color=DARKBLUE img=oryx/cspell4\n        avatar > MovingAvatar img=oryx/knight1\n        box    > Passive img=newset/block1 shrinkfactor=0.8\n        wall > Immovable img=oryx/wall3 autotiling=True\n    LevelMapping\n        0 > floor hole\n        1 > floor box\n        w > floor wall\n        A > floor avatar\n        . > floor\n    InteractionSet\n        avatar wall > stepBack\n        box avatar  > bounceForward\n        box wall box  > undoAll\n        box hole    > killSprite scoreChange=1\n    TerminationSet\n        SpriteCounter stype=box    limit=0 win=True\n\nYou are controlling the avatar in a grid-based game.\n\n=== Sprite Mapping ===\navatar -> 'a'\nbackground -> '.'\nfloor hole -> '0'\nfloor box -> '1'\nfloor wall -> 'w'\nfloor -> '.'\nstepBack -> 'avatar wall'\nbounceForward -> 'box avatar'\nundoAll -> 'box wall box'\nkillSprite -> 'box hole'\nwall floor -> '0'\n\n=== Last State ===\n000000000\n00.0....0\n00...1a.0\n0....0..0\n00010...0\n000...0.0\n0000....0\n000000000\n\n=== Current State ===\n000000000\n00.0....0\n00...1.a0\n0....0..0\n00010...0\n000...0.0\n0000....0\n000000000\n\n=== Last Reward ===\n0.0\n\n=== Available Actions ===\n0: ACTION_NIL\n1: ACTION_LEFT\n2: ACTION_RIGHT\n3: ACTION_DOWN\n4: ACTION_UP\n\n=== Avatar Position ===\n(Left is decreasing x, Right is increasing x, Up is increasing y, Down is decreasing y)(y=5, x=7)\n\nPlease choose the best action and respond in the format: ``` Action:<action number> ```",
+    "model": "openai"
+  },
+  {
+    "role": "assistant",
+    "content": "``` Action:1 ```",
+    "model": "openai"
+  },
+  {
+    "role": "user",
+    "content": "=== Game Rules ===\nBasicGame key_handler=Pulse square_size=40\n    SpriteSet\n        floor > Immovable img=newset/floor2\n        hole   > Immovable color=DARKBLUE img=oryx/cspell4\n        avatar > MovingAvatar img=oryx/knight1\n        box    > Passive img=newset/block1 shrinkfactor=0.8\n        wall > Immovable img=oryx/wall3 autotiling=True\n    LevelMapping\n        0 > floor hole\n        1 > floor box\n        w > floor wall\n        A > floor avatar\n        . > floor\n    InteractionSet\n        avatar wall > stepBack\n        box avatar  > bounceForward\n        box wall box  > undoAll\n        box hole    > killSprite scoreChange=1\n    TerminationSet\n        SpriteCounter stype=box    limit=0 win=True\n\nYou are controlling the avatar in a grid-based game.\n\n=== Sprite Mapping ===\navatar -> 'a'\nbackground -> '.'\nfloor hole -> '0'\nfloor box -> '1'\nfloor wall -> 'w'\nfloor -> '.'\nstepBack -> 'avatar wall'\nbounceForward -> 'box avatar'\nundoAll -> 'box wall box'\nkillSprite -> 'box hole'\nwall floor -> '0'\n\n=== Last State ===\n000000000\n00.0....0\n00...1.a0\n0....0..0\n00010...0\n000...0.0\n0000....0\n000000000\n\n=== Current State ===\n000000000\n00.0....0\n00...1a.0\n0....0..0\n00010...0\n000...0.0\n0000....0\n000000000\n\n=== Last Reward ===\n0.0\n\n=== Available Actions ===\n0: ACTION_NIL\n1: ACTION_LEFT\n2: ACTION_RIGHT\n3: ACTION_DOWN\n4: ACTION_UP\n\n=== Avatar Position ===\n(Left is decreasing x, Right is increasing x, Up is increasing y, Down is decreasing y)(y=5, x=6)\n\nPlease choose the best action and respond in the format: ``` Action:<action number> ```",
+    "model": "openai"
+  },
+  {
+    "role": "assistant",
+    "content": "``` Action:2 ```",
+    "model": "openai"
+  },
+  {
+    "role": "user",
+    "content": "=== Game Rules ===\nBasicGame key_handler=Pulse square_size=40\n    SpriteSet\n        floor > Immovable img=newset/floor2\n        hole   > Immovable color=DARKBLUE img=oryx/cspell4\n        avatar > MovingAvatar img=oryx/knight1\n        box    > Passive img=newset/block1 shrinkfactor=0.8\n        wall > Immovable img=oryx/wall3 autotiling=True\n    LevelMapping\n        0 > floor hole\n        1 > floor box\n        w > floor wall\n        A > floor avatar\n        . > floor\n    InteractionSet\n        avatar wall > stepBack\n        box avatar  > bounceForward\n        box wall box  > undoAll\n        box hole    > killSprite scoreChange=1\n    TerminationSet\n        SpriteCounter stype=box    limit=0 win=True\n\nYou are controlling the avatar in a grid-based game.\n\n=== Sprite Mapping ===\navatar -> 'a'\nbackground -> '.'\nfloor hole -> '0'\nfloor box -> '1'\nfloor wall -> 'w'\nfloor -> '.'\nstepBack -> 'avatar wall'\nbounceForward -> 'box avatar'\nundoAll -> 'box wall box'\nkillSprite -> 'box hole'\nwall floor -> '0'\n\n=== Last State ===\n000000000\n00.0....0\n00...1a.0\n0....0..0\n00010...0\n000...0.0\n0000....0\n000000000\n\n=== Current State ===\n000000000\n00.0....0\n00...1.a0\n0....0..0\n00010...0\n000...0.0\n0000....0\n000000000\n\n=== Last Reward ===\n0.0\n\n=== Available Actions ===\n0: ACTION_NIL\n1: ACTION_LEFT\n2: ACTION_RIGHT\n3: ACTION_DOWN\n4: ACTION_UP\n\n=== Avatar Position ===\n(Left is decreasing x, Right is increasing x, Up is increasing y, Down is decreasing y)(y=5, x=7)\n\nPlease choose the best action and respond in the format: ``` Action:<action number> ```",
+    "model": "openai"
+  },
+  {
+    "role": "assistant",
+    "content": "``` Action:1 ```",
+    "model": "openai"
+  },
+  {
+    "role": "user",
+    "content": "=== Game Rules ===\nBasicGame key_handler=Pulse square_size=40\n    SpriteSet\n        floor > Immovable img=newset/floor2\n        hole   > Immovable color=DARKBLUE img=oryx/cspell4\n        avatar > MovingAvatar img=oryx/knight1\n        box    > Passive img=newset/block1 shrinkfactor=0.8\n        wall > Immovable img=oryx/wall3 autotiling=True\n    LevelMapping\n        0 > floor hole\n        1 > floor box\n        w > floor wall\n        A > floor avatar\n        . > floor\n    InteractionSet\n        avatar wall > stepBack\n        box avatar  > bounceForward\n        box wall box  > undoAll\n        box hole    > killSprite scoreChange=1\n    TerminationSet\n        SpriteCounter stype=box    limit=0 win=True\n\nYou are controlling the avatar in a grid-based game.\n\n=== Sprite Mapping ===\navatar -> 'a'\nbackground -> '.'\nfloor hole -> '0'\nfloor box -> '1'\nfloor wall -> 'w'\nfloor -> '.'\nstepBack -> 'avatar wall'\nbounceForward -> 'box avatar'\nundoAll -> 'box wall box'\nkillSprite -> 'box hole'\nwall floor -> '0'\n\n=== Last State ===\n000000000\n00.0....0\n00...1.a0\n0....0..0\n00010...0\n000...0.0\n0000....0\n000000000\n\n=== Current State ===\n000000000\n00.0....0\n00...1a.0\n0....0..0\n00010...0\n000...0.0\n0000....0\n000000000\n\n=== Last Reward ===\n0.0\n\n=== Available Actions ===\n0: ACTION_NIL\n1: ACTION_LEFT\n2: ACTION_RIGHT\n3: ACTION_DOWN\n4: ACTION_UP\n\n=== Avatar Position ===\n(Left is decreasing x, Right is increasing x, Up is increasing y, Down is decreasing y)(y=5, x=6)\n\nPlease choose the best action and respond in the format: ``` Action:<action number> ```",
+    "model": "openai"
+  },
+  {
+    "role": "assistant",
+    "content": "``` Action:2 ```",
+    "model": "openai"
+  },
+  {
+    "role": "user",
+    "content": "=== Game Rules ===\nBasicGame key_handler=Pulse square_size=40\n    SpriteSet\n        floor > Immovable img=newset/floor2\n        hole   > Immovable color=DARKBLUE img=oryx/cspell4\n        avatar > MovingAvatar img=oryx/knight1\n        box    > Passive img=newset/block1 shrinkfactor=0.8\n        wall > Immovable img=oryx/wall3 autotiling=True\n    LevelMapping\n        0 > floor hole\n        1 > floor box\n        w > floor wall\n        A > floor avatar\n        . > floor\n    InteractionSet\n        avatar wall > stepBack\n        box avatar  > bounceForward\n        box wall box  > undoAll\n        box hole    > killSprite scoreChange=1\n    TerminationSet\n        SpriteCounter stype=box    limit=0 win=True\n\nYou are controlling the avatar in a grid-based game.\n\n=== Sprite Mapping ===\navatar -> 'a'\nbackground -> '.'\nfloor hole -> '0'\nfloor box -> '1'\nfloor wall -> 'w'\nfloor -> '.'\nstepBack -> 'avatar wall'\nbounceForward -> 'box avatar'\nundoAll -> 'box wall box'\nkillSprite -> 'box hole'\nwall floor -> '0'\n\n=== Last State ===\n000000000\n00.0....0\n00...1a.0\n0....0..0\n00010...0\n000...0.0\n0000....0\n000000000\n\n=== Current State ===\n000000000\n00.0....0\n00...1.a0\n0....0..0\n00010...0\n000...0.0\n0000....0\n000000000\n\n=== Last Reward ===\n0.0\n\n=== Available Actions ===\n0: ACTION_NIL\n1: ACTION_LEFT\n2: ACTION_RIGHT\n3: ACTION_DOWN\n4: ACTION_UP\n\n=== Avatar Position ===\n(Left is decreasing x, Right is increasing x, Up is increasing y, Down is decreasing y)(y=5, x=7)\n\nPlease choose the best action and respond in the format: ``` Action:<action number> ```",
+    "model": "openai"
+  }
+]

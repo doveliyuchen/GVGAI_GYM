@@ -1,0 +1,65 @@
+{
+    "openai": {
+      "model": "gpt-4o-mini",
+      "parameters": {
+        "temperature": 0.9,
+        "max_tokens": 2000,
+        "top_p": 0.9
+      }
+    },
+    "ollama": {
+      "model": "gemma3",
+      "parameters": {
+        "temperature": 0.9,
+        "max_tokens": 2000,
+        "top_p": 0.95
+      }
+    },
+    "deepseek": {
+      "model": "deepseek-chat",
+      "parameters": {
+        "temperature": 0.9,
+        "max_tokens": 2000
+      }
+    },
+    "qwen":{
+      "model": "qwen-plus",
+      "parameters": {
+        "temperature": 0.9,
+        "max_tokens": 2000
+      }
+    },
+    "portkey":{
+      "client_type": "portkey",
+      "portkey_base_url": "https://ai-gateway.apps.cloud.rt.nyu.edu",
+      "portkey_api_key_env_var": "PORTKEY_API_KEY", 
+      "virtual_key_env_var": "PORTKEY_VIRTUAL_KEY_O3_MINI", 
+      "actual_model_name": "o3-mini", 
+      "parameters": {
+        "max_context_tokens": 8000,
+        "max_tokens": 2000
+      }
+    },
+    "portkey-4o-mini": {
+      "client_type": "portkey",
+      "portkey_base_url": "https://ai-gateway.apps.cloud.rt.nyu.edu",
+      "portkey_api_key_env_var": "PORTKEY_API_KEY",
+      "virtual_key_env_var": "PORTKEY_VIRTUAL_KEY_4O_MINI", 
+      "actual_model_name": "gpt-4o-mini", 
+      "parameters": {
+        "max_context_tokens": 8000,
+        "max_tokens": 2048 
+      }
+    },
+    "gemini": {
+      "client_type": "portkey",
+      "portkey_base_url": "https://ai-gateway.apps.cloud.rt.nyu.edu",
+      "portkey_api_key_env_var": "PORTKEY_API_KEY",
+      "virtual_key_env_var": "PORTKEY_VIRTUAL_KEY_VERTEX_AI", 
+      "actual_model_name": "gemini-2.0-flash-exp", 
+      "parameters": {
+        "max_context_tokens": 7000,
+        "max_tokens": 2048
+      }
+    }
+}

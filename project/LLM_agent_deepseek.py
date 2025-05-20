@@ -384,7 +384,7 @@ if __name__ == "__main__":
     llm_list= ['deepseek']
     # model = 'deepseek-r1:14b'
 
-    for game in os.listdir(full_path)[91:]:
+    for game in os.listdir(full_path)[103:]:
         print(game)
         env_name = "gvgai-"+game[:-3]+"-lvl0-v0"
 
