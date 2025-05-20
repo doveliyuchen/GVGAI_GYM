@@ -32,11 +32,12 @@ def generate_reward_report(reflection_manager, output_dir, winner=None):
     plt.savefig(os.path.join(output_dir, "game_analysis.png"))
     plt.close()
 
-def save_step_metrics_json(path, step_flags, key="meaningful", winner=None):
-    """Save boolean list as step-wise metrics json."""
+def save_step_metrics_json(path, step_flags, positions, key="meaningful", winner=None):
+    """Save boolean list and avatar positions as step-wise metrics json."""
     metrics = {
         f"{key}_steps": step_flags,
-        f"{key}_step_ratio": sum(step_flags) / len(step_flags)
+        f"{key}_step_ratio": sum(step_flags) / len(step_flags),
+        "avatar_positions": [[pos] for pos in positions] # Transform into n*1 shape
     }
     if winner is not None:
         metrics["winner"] = winner
@@ -45,10 +46,11 @@ def save_step_metrics_json(path, step_flags, key="meaningful", winner=None):
 
 def analyze_meaningful_steps(states, step_log):
     def extract_avatar_pos(state):
-        for y, row in enumerate(state):
+        # Removed vertical flipping logic and debug print
+        for y, row in enumerate(state.splitlines()): # Split lines here directly
             for x, ch in enumerate(row):
                 if 'a' in ch.lower() or 'avatar' in ch.lower():
-                    return (y, x)
+                    return (y, x) # Return raw y
         return None
 
     def detect_entity_disappearance(s_t, s_tp1):
@@ -84,18 +86,22 @@ def analyze_meaningful_steps(states, step_log):
 
         flags.append(meaningful)
         pos_prev = pos_t
+        # Removed debug prints for individual step positions
 
-    return flags, sum(flags) / len(flags) if flags else 0.0
+    positions = [extract_avatar_pos(states[t]) for t in range(max_steps)] # Collect pos_t for each step
+    # Removed debug prints for the final list
+    return flags, sum(flags) / len(flags) if flags else 0.0, positions
 
 
 def save_step_metrics_csv(states, step_log, output_path, winner=None):
     """Save full step-by-step metrics to CSV for analysis."""
 
     def extract_avatar_pos(state):
-        for y, row in enumerate(state):
+        # Removed vertical flipping logic and debug print
+        for y, row in enumerate(state.splitlines()): # Split lines here directly
             for x, ch in enumerate(row):
                 if 'a' in ch.lower() or 'avatar' in ch.lower():
-                    return (y, x)
+                    return (y, x) # Return raw y
         return None
 
     def detect_entity_disappearance(s_t, s_tp1):
@@ -174,8 +180,8 @@ def generate_full_analysis_report(
     generate_reward_report(reflection_manager, output_dir, winner)
 
     step_log = reflection_manager.step_log
-    step_flags, _ = analyze_meaningful_steps(states, step_log)
-    save_step_metrics_json(os.path.join(output_dir, "step_metrics.json"), step_flags, winner=winner)
+    step_flags, _, positions = analyze_meaningful_steps(states, step_log) # Capture positions
+    save_step_metrics_json(os.path.join(output_dir, "step_metrics.json"), step_flags, positions, winner=winner) # Pass positions
 
     save_step_metrics_csv(
         states=states,

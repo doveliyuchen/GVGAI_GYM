@@ -13,7 +13,8 @@ from llm.agent.llm_agent import LLMPlayer
 from llm.agent.llm_translator import LLMTranslator
 from llm.utils.agent_components import show_state_gif, generate_mapping_and_ascii, extract_avatar_position_from_state
 from llm.utils.vgdl_utils import load_level_map, load_vgdl_rules
-
+from dotenv import load_dotenv
+from llm.utils.config import get_profile_config # To read llm_config.json for each model
 # --- Helper functions for managing run directories (inspired by llm_agent_loop.py) ---
 def get_game_name_simple(env_name_full):
     """Extracts a simplified game name like 'zelda-lvl1' from 'gvgai-zelda-lvl1-v0'."""
@@ -171,8 +172,8 @@ def run_single_game_task(env_name_full: str, mode: str, model_name_full: str, re
         done = False
         sprite_map = {} # Initialize sprite_map for the loop
 
-        while not done and step_count < max_steps:
-            print(f"== {env_name_full} | Mode: {mode} | Model: {model_name_full} | Run: {actual_run_id_to_use} | Step {step_count+1}/{max_steps} ==")
+        while not done and (max_steps is None or step_count < max_steps):
+            print(f"== {env_name_full} | Mode: {mode} | Model: {model_name_full} | Run: {actual_run_id_to_use} | Step {step_count+1}/{max_steps if max_steps is not None else 'inf'} ==")
 
             # Generate current state representation for the agent
             # Ensure vgdl_rules here is the original VGDL, not the translated one, if generate_mapping_and_ascii expects it.
@@ -251,7 +252,7 @@ def main():
     parser.add_argument('--modes', nargs='+', default=['zero-shot', 'contextual'], help='List of modes (default: zero-shot contextual)')
     parser.add_argument('--num_runs', type=int, default=1, help='Number of runs for each game/model/mode combination (default: 1)')
     parser.add_argument('--base_output_dir', type=str, default='llm_agent_runs_output', help='Base directory for all results')
-    parser.add_argument('--max_steps', type=int, default=200, help='Maximum steps per episode (default: 1000)')
+    parser.add_argument('--max_steps', type=int, default=None, help='Maximum steps per episode (default: None, runs until game done)')
     parser.add_argument('--max_workers', type=int, default=None, help='Maximum number of parallel workers (default: None, uses os.cpu_count())')
     parser.add_argument('--force_rerun', action='store_true', help='Force rerun tasks even if output directory exists and is not empty.')
     parser.add_argument('--reverse', action='store_true', help='Process games in reverse order.')
@@ -265,8 +266,7 @@ def main():
     
     # Load .env once
     try:
-        from dotenv import load_dotenv
-        from llm.utils.config import get_profile_config # To read llm_config.json for each model
+   
 
         dotenv_path = os.path.join(os.path.dirname(__file__), '..', '.env') # Assumes .env is in GVGAI_LLM/
         if os.path.exists(dotenv_path):
