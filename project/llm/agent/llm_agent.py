@@ -1,5 +1,6 @@
 import os
 import re
+import time
 from typing import Optional, Any, Tuple, Literal
 from llm.client import create_client_from_config
 from llm.utils.agent_components import parse_action_from_response
@@ -142,12 +143,53 @@ class LLMPlayer:
 
         # print(prompt)
 
-        response = self.llm_client.query(prompt, image_path=current_image_path)
-        self.logger.log_response(response)
-        action, _ = parse_action_from_response(response, self.action_map)
+        # Retry mechanism for handling API errors
+        max_retries = 5
+        base_wait_time = 60  # Start with 60 seconds wait time
+        
+        for attempt in range(max_retries):
+            response = self.llm_client.query(prompt, image_path=current_image_path)
+            self.logger.log_response(response)
+            
+            # Check if response is an error
+            if response and response.strip().startswith("Error:"):
+                error_code = response.strip()
+                print(f"[API ERROR] Attempt {attempt + 1}/{max_retries}: {error_code}")
+                
+                if attempt < max_retries - 1:  # Don't wait on the last attempt
+                    wait_time = base_wait_time * (2 ** attempt)  # Exponential backoff
+                    print(f"[RETRY] Waiting {wait_time} seconds before retry...")
+                    time.sleep(wait_time)
+                    continue
+                else:
+                    print(f"[ERROR] Max retries reached. Using default action 0.")
+                    action = 0
+                    action_name = self.action_map.get(0, "ACTION_0")
+                    break
+            
+            # Handle empty responses
+            elif not response or not response.strip():
+                print(f"[WARNING] Empty response from {self.model_name}.")
+                if attempt < max_retries - 1:
+                    wait_time = base_wait_time
+                    print(f"[RETRY] Waiting {wait_time} seconds before retry...")
+                    time.sleep(wait_time)
+                    continue
+                else:
+                    print(f"[ERROR] Max retries reached. Using default action 0.")
+                    action = 0
+                    action_name = self.action_map.get(0, "ACTION_0")
+                    break
+            
+            # Valid response - parse action and break out of retry loop
+            else:
+                action, action_name = parse_action_from_response(response, self.action_map)
+                print(f"Response: {response}")
+                print(f"Action: {action} ({action_name})")
+                break
+        
         self.action_history.append(action)
         self.last_state = current_state
-        print(response)
         return action
 
     def update(self, action: int, reward: float, winner=None):

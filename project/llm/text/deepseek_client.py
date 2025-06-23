@@ -12,7 +12,13 @@ class DeepseekClient(LLMClientBase):
         self.base_url = "https://api.deepseek.com"
         self.chat_endpoint = "/chat/completions"
         self.system_prompt = system_prompt
-        self.default_model = model
+        self.default_model = model or "deepseek-chat"
+        
+        # Initialize attributes that may be set by client.py
+        self.max_tokens = None
+        self.temperature = None
+        self.top_p = None
+        
         if not self.api_key:
             raise ValueError("Missing DEEPSEEK_API_KEY in .env")
 
@@ -42,15 +48,25 @@ class DeepseekClient(LLMClientBase):
         return response_text
 
     def _query_text_only(self) -> str:
-        self.messages = truncate_messages_by_token(self.messages, self.max_tokens or 4000, self.default_model)
+        # Use a reasonable context limit for message truncation, not max_tokens (which is for response)
+        # DeepSeek models typically have 32k context, so use a conservative limit
+        context_limit = 28000  # Leave room for response
+        self.messages = truncate_messages_by_token(self.messages, context_limit, self.default_model)
 
+        # Build payload, only include non-None values
         payload = {
             "model": self.default_model,
             "messages": self.messages,
-            "temperature": self.temperature,
-            "max_tokens": self.max_tokens,
-            "top_p": self.top_p,
         }
+        
+        # Only add optional parameters if they are not None
+        if self.temperature is not None:
+            payload["temperature"] = self.temperature
+        if self.max_tokens is not None:
+            payload["max_tokens"] = self.max_tokens
+        if self.top_p is not None:
+            payload["top_p"] = self.top_p
+            
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
@@ -73,7 +89,15 @@ class DeepseekClient(LLMClientBase):
                     time.sleep(3)
                     continue
                 else:
-                    print(f"[DeepseekClient] API Error: {e}")
+                    # Print more detailed error information for 400 errors
+                    error_detail = ""
+                    try:
+                        error_detail = response.json()
+                    except:
+                        error_detail = response.text
+                    print(f"[DeepseekClient] API Error {response.status_code}: {e}")
+                    print(f"[DeepseekClient] Error details: {error_detail}")
+                    print(f"[DeepseekClient] Payload sent: {payload}")
                     return ""
             except Exception as e:
                 print(f"[DeepseekClient] Unexpected Error: {e}")

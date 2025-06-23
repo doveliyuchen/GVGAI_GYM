@@ -198,7 +198,9 @@ def run_single_game_task(env_name_full: str, mode: str, model_name_full: str, re
             )
 
             _, reward, done, info = env.step(action)
-            player.update(action=action, reward=reward)
+            # Extract winner information from info - always pass it, not just when done
+            winner_info = info.get('winner', None)
+            player.update(action=action, reward=reward, winner=winner_info)
             ascii_state = info['ascii'] # Update for next iteration
             gif_saver(env)
             step_count += 1
@@ -221,16 +223,18 @@ def run_single_game_task(env_name_full: str, mode: str, model_name_full: str, re
         
         if game_successful and player: # Only save logs if game completed successfully
             player.save_logs() 
-            analysis_file_path = os.path.join(run_dir, "benchmark_analysis.json")
-            player.export_analysis(analysis_file_path) 
-            print(f"Analysis saved to {analysis_file_path}")
+            player.export_analysis(run_dir)  # Pass the directory, not a file path
+            print(f"Analysis saved to {run_dir}")
         elif player: # Player exists but game was not successful
             print(f"Game run for {env_name_full}, {model_name_full}, Run {actual_run_id_to_use} was not successful. Skipping log saving for LLMPlayer.")
 
-        if gif_saver and step_count > 0: # Save GIF regardless of success, if frames were captured
+        # Only save GIF if game completed normally (done=True) or reached max steps
+        if gif_saver and step_count > 0 and game_successful: # Only save GIF if game completed successfully
             gif_path = os.path.join(run_dir, "gameplay.gif")
             gif_saver.save(gif_path)
             print(f"GIF saved to {gif_path}")
+        elif gif_saver and step_count > 0:
+            print(f"Game did not complete successfully. Skipping GIF generation for {env_name_full}, Run {actual_run_id_to_use}.")
         
         if player: # Ensure player object exists for final status print
             print(f"[{mode.upper()}] Game: {env_name_full} Model: {model_name_full} Run: {actual_run_id_to_use} "
@@ -251,7 +255,7 @@ def main():
     parser.add_argument('--models', nargs='+', required=True, help='List of models (e.g., deepseek openai portkey-gpt-4o-mini)')
     parser.add_argument('--modes', nargs='+', default=['zero-shot', 'contextual'], help='List of modes (default: zero-shot contextual)')
     parser.add_argument('--num_runs', type=int, default=1, help='Number of runs for each game/model/mode combination (default: 1)')
-    parser.add_argument('--base_output_dir', type=str, default='llm_agent_runs_output', help='Base directory for all results')
+    parser.add_argument('--base_output_dir', type=str, default=None, help='Base directory for all results (default: auto-detect based on running location)')
     parser.add_argument('--max_steps', type=int, default=None, help='Maximum steps per episode (default: None, runs until game done)')
     parser.add_argument('--max_workers', type=int, default=None, help='Maximum number of parallel workers (default: None, uses os.cpu_count())')
     parser.add_argument('--force_rerun', action='store_true', help='Force rerun tasks even if output directory exists and is not empty.')
@@ -260,6 +264,20 @@ def main():
     parser.add_argument('--specific_level', type=int, default=None, help='Optional: Process only this specific level number for all games. If not set, all discovered levels are processed.')
 
     args = parser.parse_args()
+
+    # Auto-detect base output directory if not specified
+    if args.base_output_dir is None:
+        # Determine if we're running from project/ or root directory
+        script_dir = Path(__file__).parent
+        if script_dir.name == 'project':
+            # Running from project/, output to parent directory (GVGAI_LLM root)
+            args.base_output_dir = str(script_dir.parent / 'llm_agent_runs_output')
+        else:
+            # Running from root or other location, use current directory
+            args.base_output_dir = 'llm_agent_runs_output'
+        print(f"Auto-detected base output directory: {args.base_output_dir}")
+    else:
+        print(f"Using specified base output directory: {args.base_output_dir}")
 
     # Load Portkey virtual keys from .env if portkey models are requested
     portkey_virtual_keys_loaded = {} # Stores CLI model name -> its virtual key string
@@ -322,7 +340,21 @@ def main():
     else:
         # Default: Scan for all games in gym_gvgai/envs/games/ and exclude testgames
         print("No specific games provided via --games. Scanning for all available games (excluding 'testgame' variants)...")
-        all_games_dir = Path("gym_gvgai/envs/games/")
+        # Handle both running from root directory and from project directory
+        possible_paths = [
+            Path("../gym_gvgai/envs/games/"),  # When running from project/
+            Path("gym_gvgai/envs/games/"),  # When running from root
+        ]
+        
+        all_games_dir = None
+        for path in possible_paths:
+            if path.is_dir():
+                all_games_dir = path
+                break
+        
+        if all_games_dir is None:
+            print(f"Error: Could not find games directory. Tried: {[str(p) for p in possible_paths]}. Please specify games via --games. Exiting.")
+            return
         if all_games_dir.is_dir():
             for game_path in sorted(all_games_dir.iterdir()):
                 if game_path.is_dir(): # Each game is a directory like 'aliens_v0'
@@ -376,7 +408,23 @@ def main():
             print(f"Processing only specified level {args.specific_level} for {game_dir_name}.")
         else:
             # Default: Process all discovered levels for this game
-            game_levels_path = Path(f"gym_gvgai/envs/games/{game_dir_name}")
+            # Use the same logic as above to find the correct path
+            script_dir = Path(__file__).parent
+            possible_game_paths = [
+                Path(f"../gym_gvgai/envs/games/{game_dir_name}"),  # When running from project/
+                Path(f"gym_gvgai/envs/games/{game_dir_name}"),  # When running from root
+            ]
+            
+            game_levels_path = None
+            for path in possible_game_paths:
+                if path.is_dir():
+                    game_levels_path = path
+                    break
+            
+            if game_levels_path is None:
+                print(f"Warning: Game directory not found for {game_dir_name}. Tried: {[str(p) for p in possible_game_paths]}. Will attempt to run default level 0 if game environment can be created.")
+                levels_to_process.append(0)
+                continue
             print(f"Discovering all levels for {game_dir_name} in path: {game_levels_path.resolve()}")
             if game_levels_path.is_dir():
                 found_level_indices = set() # Use a set to store 0-based level indices to avoid duplicates
@@ -421,19 +469,23 @@ def main():
 
             for model_name_full in args.models:
                 for mode in args.modes:
-                    # If num_runs is, say, 3, we want to ensure runs 1, 2, 3 are processed.
-                    # find_next_available_run_id helps if we only want to add *new* runs.
-                    # If we want to ensure a specific number of runs, the logic is different.
-                    # For now, let's assume num_runs means "try to execute these run_ids".
+                    # Check if this game/model/mode combination already has enough completed runs
+                    if not args.force_rerun:
+                        existing_completed_runs = 0
+                        for run_id in range(1, args.num_runs + 10):  # Check a bit beyond num_runs
+                            if check_run_dir_is_taken(args.base_output_dir, model_name_full, env_name_full, run_id):
+                                existing_completed_runs += 1
+                            if existing_completed_runs >= args.num_runs:
+                                break
+                        
+                        if existing_completed_runs >= args.num_runs:
+                            print(f"Skipping {env_name_full} with {model_name_full} in {mode} mode: already has {existing_completed_runs} completed runs (required: {args.num_runs})")
+                            continue  # Skip this model/mode combination for this game
+                    
+                    # If we reach here, we need to add tasks for missing runs
                     for i in range(1, args.num_runs + 1):
                         current_run_id_to_attempt = i
                         
-                        # If not forcing rerun, find the *actual* next available ID if we want to stack indefinitely
-                        # However, the user asked for num_runs, implying specific run numbers.
-                        # So, if force_rerun is false, we only skip if it *already* exists.
-                        # The find_next_available_run_id is more for "add N more runs".
-                        # Let's stick to the simpler interpretation: try to run 1..num_runs, skip if exists unless --force.
-
                         task_args = {
                             "env_name_full": env_name_full,
                             "mode": mode,
@@ -447,11 +499,6 @@ def main():
                         # Pass the loaded virtual key string if this model is in our dict
                         if model_name_full in portkey_virtual_keys_loaded:
                             task_args["portkey_virtual_key"] = portkey_virtual_keys_loaded[model_name_full]
-                        # Note: The create_client_from_config will handle fetching the *general* Portkey API key
-                        # and other details from the model's profile in llm_config.json.
-                        # The run_single_game_task will set the specific virtual_key into the environment
-                        # if passed, for the PortkeyClient to pick up (if it's designed that way),
-                        # OR the modified create_client_from_config now passes it directly.
                         
                         tasks.append(task_args)
 

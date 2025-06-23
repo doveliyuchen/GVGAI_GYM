@@ -1,0 +1,6 @@
+[
+  {
+    "role": "response",
+    "content": "Given the current game state and following the established strategy, I'll take the following action:\n\nSince my initial position is not specified in the current state JSON, I'll need to make an educated guess based on the characters on the map. It appears there are multiple possible avatars around the states indicated by `@` and an environment filled with walls, water, and goals #.\n\nTo optimize my next move:\n- I will attempt to navigate safely towards one of the goal sprites (`#`).\n- The nearest goal is located at (1, 1), but I must ensure I do not navigate into any hazards (water `*`).\n\nConsidering that I might be starting near one of the positions where I see `@`, I'll choose the `ACTION_UP`, which allows for rotation towards the goal while keeping an awareness to avoid the water.\n\nThus, I will execute:\n\n``` Action:4 ```\nThis action should allow me to reposition towards the goal without hitting a wall or water. I expect that this adheres to our strategy of movement planning while keeping a focused route towards scoring at the goal."
+  }
+]

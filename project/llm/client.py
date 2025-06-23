@@ -19,9 +19,11 @@ def create_client_from_config(profile: str): # profile is the CLI name, e.g., "p
     # Default to profile name itself if "client_type" is not specified in the config.
     client_type_from_config = config.get("client_type", profile) 
 
-    # Normalize client_type for common Portkey naming conventions from CLI
+    # Normalize client_type for common naming conventions from CLI
     if profile.startswith("portkey-") or profile == "gemini":
         effective_client_type = "portkey"
+    elif profile.startswith("deepseek"):
+        effective_client_type = "deepseek"
     else:
         effective_client_type = client_type_from_config
 

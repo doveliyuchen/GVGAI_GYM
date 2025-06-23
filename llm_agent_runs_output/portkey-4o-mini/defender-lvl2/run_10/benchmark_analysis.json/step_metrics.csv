@@ -1,0 +1,956 @@
+step,action,reward,avatar_pos_before,avatar_pos_after,reward_triggered,entity_triggered,meaningful
+0,3,0.0,"(3, 1)","(3, 2)",False,False,True
+1,1,0.0,"(3, 2)","(3, 2)",False,True,True
+2,2,0.0,"(3, 2)","(3, 1)",False,False,True
+3,1,0.0,"(3, 1)","(3, 1)",False,True,True
+4,5,0.0,"(3, 1)","(2, 1)",False,True,True
+5,5,0.0,"(2, 1)","(1, 1)",False,False,True
+6,2,0.0,"(1, 1)","(1, 0)",False,False,True
+7,2,0.0,"(1, 0)","(1, 0)",False,False,False
+8,4,0.0,"(1, 0)","(2, 0)",False,True,True
+9,2,0.0,"(2, 0)","(2, 0)",False,False,False
+10,4,0.0,"(2, 0)","(3, 0)",False,True,True
+11,2,0.0,"(3, 0)","(3, 0)",False,True,True
+12,3,0.0,"(3, 0)","(3, 1)",False,False,True
+13,3,0.0,"(3, 1)","(3, 2)",False,False,True
+14,2,0.0,"(3, 2)","(3, 1)",False,True,False
+15,3,0.0,"(3, 1)","(3, 2)",False,True,False
+16,2,0.0,"(3, 2)","(3, 1)",False,False,False
+17,4,0.0,"(3, 1)","(4, 1)",False,False,True
+18,2,0.0,"(4, 1)","(4, 0)",False,True,True
+19,3,0.0,"(4, 0)","(4, 1)",False,True,False
+20,5,0.0,"(4, 1)","(3, 1)",False,True,True
+21,4,0.0,"(3, 1)","(4, 1)",False,False,False
+22,4,0.0,"(4, 1)","(5, 1)",False,False,True
+23,2,0.0,"(5, 1)","(5, 0)",False,True,True
+24,3,0.0,"(5, 0)","(5, 1)",False,True,False
+25,2,0.0,"(5, 1)","(5, 0)",False,True,False
+26,5,0.0,"(5, 0)","(4, 0)",False,False,True
+27,3,0.0,"(4, 0)","(4, 1)",False,True,True
+28,3,0.0,"(4, 1)","(4, 2)",False,True,True
+29,3,0.0,"(4, 2)","(4, 3)",False,True,True
+30,3,0.0,"(4, 3)","(4, 4)",False,True,True
+31,1,0.0,"(4, 4)","(4, 4)",False,True,True
+32,5,0.0,"(4, 4)","(3, 4)",False,True,True
+33,2,0.0,"(3, 4)","(3, 3)",False,False,True
+34,3,0.0,"(3, 3)","(3, 4)",False,True,False
+35,4,0.0,"(3, 4)","(4, 4)",False,True,True
+36,4,0.0,"(4, 4)","(5, 4)",False,False,True
+37,5,0.0,"(5, 4)","(4, 4)",False,False,False
+38,2,0.0,"(4, 4)","(4, 3)",False,True,True
+39,4,0.0,"(4, 3)","(5, 3)",False,True,True
+40,5,0.0,"(5, 3)","(4, 3)",False,True,False
+41,4,0.0,"(4, 3)","(5, 3)",False,False,False
+42,3,0.0,"(5, 3)","(5, 4)",False,False,True
+43,3,0.0,"(5, 4)","(5, 5)",False,True,True
+44,3,0.0,"(5, 5)","(5, 6)",False,True,True
+45,5,0.0,"(5, 6)","(4, 6)",False,True,True
+46,3,0.0,"(4, 6)","(4, 7)",False,False,True
+47,2,0.0,"(4, 7)","(4, 6)",False,True,False
+48,4,0.0,"(4, 6)","(5, 6)",False,True,True
+49,5,0.0,"(5, 6)","(4, 6)",False,True,False
+50,1,2.0,"(4, 6)","(4, 6)",True,True,True
+51,1,0.0,"(4, 6)","(4, 6)",False,True,True
+52,4,0.0,"(4, 6)","(5, 6)",False,True,True
+53,4,0.0,"(5, 6)","(6, 6)",False,True,True
+54,3,0.0,"(6, 6)","(6, 7)",False,True,True
+55,5,-1.0,"(6, 7)","(5, 7)",True,True,True
+56,5,0.0,"(5, 7)","(4, 7)",False,False,True
+57,2,0.0,"(4, 7)","(4, 6)",False,True,True
+58,1,0.0,"(4, 6)","(4, 6)",False,True,True
+59,4,0.0,"(4, 6)","(5, 6)",False,False,True
+60,4,0.0,"(5, 6)","(6, 6)",False,False,True
+61,2,0.0,"(6, 6)","(6, 5)",False,True,True
+62,4,0.0,"(6, 5)","(7, 5)",False,True,True
+63,2,0.0,"(7, 5)","(7, 4)",False,True,True
+64,3,0.0,"(7, 4)","(7, 5)",False,True,False
+65,4,0.0,"(7, 5)","(7, 5)",False,True,True
+66,2,0.0,"(7, 5)","(7, 4)",False,True,True
+67,4,0.0,"(7, 4)","(8, 4)",False,True,True
+68,3,0.0,"(8, 4)","(8, 4)",False,True,True
+69,5,0.0,"(8, 4)","(7, 4)",False,True,True
+70,2,0.0,"(7, 4)","(7, 3)",False,True,True
+71,2,-2.0,"(7, 3)","(7, 2)",True,True,True
+72,5,0.0,"(7, 2)","(6, 2)",False,True,True
+73,2,0.0,"(6, 2)","(6, 1)",False,True,True
+74,3,0.0,"(6, 1)","(6, 2)",False,True,False
+75,5,0.0,"(6, 2)","(5, 2)",False,True,True
+76,2,0.0,"(5, 2)","(5, 1)",False,True,True
+77,2,0.0,"(5, 1)","(5, 0)",False,True,True
+78,5,0.0,"(5, 0)","(4, 0)",False,True,True
+79,3,0.0,"(4, 0)","(4, 1)",False,True,True
+80,5,0.0,"(4, 1)","(3, 1)",False,True,True
+81,2,0.0,"(3, 1)","(3, 0)",False,True,True
+82,1,0.0,"(3, 0)","(3, 0)",False,True,True
+83,4,-1.0,"(3, 0)","(4, 0)",True,True,True
+84,4,0.0,"(4, 0)","(5, 0)",False,True,True
+85,5,0.0,"(5, 0)","(4, 0)",False,True,False
+86,3,0.0,"(4, 0)","(4, 1)",False,True,True
+87,3,-1.0,"(4, 1)","(4, 2)",True,True,True
+88,4,0.0,"(4, 2)","(5, 2)",False,True,True
+89,5,0.0,"(5, 2)","(4, 2)",False,False,False
+90,3,0.0,"(4, 2)","(4, 3)",False,True,True
+91,3,0.0,"(4, 3)","(4, 4)",False,True,True
+92,5,0.0,"(4, 4)","(3, 4)",False,False,True
+93,2,0.0,"(3, 4)","(3, 3)",False,False,True
+94,2,0.0,"(3, 3)","(3, 2)",False,True,True
+95,2,0.0,"(3, 2)","(3, 1)",False,True,True
+96,3,0.0,"(3, 1)","(3, 2)",False,False,False
+97,2,0.0,"(3, 2)","(3, 1)",False,True,False
+98,2,0.0,"(3, 1)","(3, 0)",False,False,True
+99,4,0.0,"(3, 0)","(4, 0)",False,True,True
+100,1,0.0,"(4, 0)","(4, 0)",False,True,True
+101,3,0.0,"(4, 0)","(4, 1)",False,True,True
+102,5,0.0,"(4, 1)","(3, 1)",False,True,True
+103,5,0.0,"(3, 1)","(2, 1)",False,True,True
+104,3,0.0,"(2, 1)","(2, 2)",False,True,True
+105,3,0.0,"(2, 2)","(2, 3)",False,True,True
+106,4,0.0,"(2, 3)","(3, 3)",False,True,True
+107,3,0.0,"(3, 3)","(3, 4)",False,True,True
+108,3,0.0,"(3, 4)","(3, 5)",False,True,True
+109,1,0.0,"(3, 5)","(3, 5)",False,True,True
+110,4,0.0,"(3, 5)","(4, 5)",False,True,True
+111,1,0.0,"(4, 5)","(4, 5)",False,True,True
+112,2,0.0,"(4, 5)","(4, 4)",False,True,True
+113,4,-1.0,"(4, 4)","(5, 4)",True,True,True
+114,3,0.0,"(5, 4)","(5, 5)",False,True,True
+115,1,0.0,"(5, 5)","(5, 5)",False,True,True
+116,3,0.0,"(5, 5)","(5, 6)",False,True,True
+117,4,0.0,"(5, 6)","(6, 6)",False,True,True
+118,5,0.0,"(6, 6)","(5, 6)",False,True,False
+119,2,0.0,"(5, 6)","(5, 5)",False,True,True
+120,5,0.0,"(5, 5)","(4, 5)",False,True,True
+121,4,0.0,"(4, 5)","(5, 5)",False,True,False
+122,5,0.0,"(5, 5)","(4, 5)",False,True,False
+123,4,-1.0,"(4, 5)","(5, 5)",True,True,False
+124,5,0.0,"(5, 5)","(4, 5)",False,True,False
+125,4,0.0,"(4, 5)","(5, 5)",False,True,False
+126,2,0.0,"(5, 5)","(5, 4)",False,True,True
+127,4,0.0,"(5, 4)","(6, 4)",False,True,True
+128,2,0.0,"(6, 4)","(6, 3)",False,True,True
+129,4,-1.0,"(6, 3)","(7, 3)",True,True,True
+130,2,0.0,"(7, 3)","(7, 2)",False,True,True
+131,5,0.0,"(7, 2)","(6, 2)",False,True,True
+132,4,0.0,"(6, 2)","(7, 2)",False,True,False
+133,2,0.0,"(7, 2)","(7, 1)",False,True,True
+134,2,0.0,"(7, 1)","(7, 0)",False,True,True
+135,4,-3.0,"(7, 0)","(8, 0)",True,True,True
+136,4,0.0,"(8, 0)","(9, 0)",False,True,True
+137,4,-1.0,"(9, 0)","(10, 0)",True,True,True
+138,2,0.0,"(10, 0)","(10, 0)",False,True,True
+139,3,0.0,"(10, 0)","(10, 1)",False,True,True
+140,2,0.0,"(10, 1)","(10, 0)",False,True,False
+141,3,0.0,"(10, 0)","(10, 1)",False,True,False
+142,5,0.0,"(10, 1)","(9, 1)",False,True,True
+143,3,0.0,"(9, 1)","(9, 2)",False,True,True
+144,2,0.0,"(9, 2)","(9, 1)",False,True,False
+145,2,0.0,"(9, 1)","(9, 0)",False,True,True
+146,3,0.0,"(9, 0)","(9, 1)",False,True,False
+147,5,0.0,"(9, 1)","(8, 1)",False,True,True
+148,2,0.0,"(8, 1)","(8, 0)",False,True,True
+149,2,0.0,"(8, 0)","(8, 0)",False,True,True
+150,2,0.0,"(8, 0)","(8, 0)",False,True,True
+151,3,-2.0,"(8, 0)","(8, 1)",True,True,True
+152,5,0.0,"(8, 1)","(7, 1)",False,True,True
+153,4,0.0,"(7, 1)","(8, 1)",False,True,False
+154,2,0.0,"(8, 1)","(8, 0)",False,True,True
+155,3,-4.0,"(8, 0)","(8, 1)",True,True,False
+156,3,0.0,"(8, 1)","(8, 2)",False,True,True
+157,3,0.0,"(8, 2)","(8, 3)",False,True,True
+158,3,0.0,"(8, 3)","(8, 4)",False,True,True
+159,3,-1.0,"(8, 4)","(8, 5)",True,True,True
+160,3,0.0,"(8, 5)","(8, 5)",False,True,True
+161,5,0.0,"(8, 5)","(7, 5)",False,True,True
+162,4,0.0,"(7, 5)","(8, 5)",False,True,False
+163,4,0.0,"(8, 5)","(8, 5)",False,True,True
+164,4,0.0,"(8, 5)","(8, 5)",False,True,True
+165,2,0.0,"(8, 5)","(8, 4)",False,True,True
+166,4,0.0,"(8, 4)","(9, 4)",False,True,True
+167,4,0.0,"(9, 4)","(10, 4)",False,True,True
+168,5,0.0,"(10, 4)","(9, 4)",False,True,False
+169,5,-2.0,"(9, 4)","(8, 4)",True,True,True
+170,5,0.0,"(8, 4)","(7, 4)",False,True,True
+171,5,0.0,"(7, 4)","(6, 4)",False,True,True
+172,1,0.0,"(6, 4)","(6, 4)",False,True,True
+173,4,0.0,"(6, 4)","(7, 4)",False,True,True
+174,2,0.0,"(7, 4)","(7, 3)",False,True,True
+175,2,2.0,"(7, 3)","(7, 2)",True,True,True
+176,2,0.0,"(7, 2)","(7, 1)",False,True,True
+177,3,-2.0,"(7, 1)","(7, 2)",True,True,False
+178,4,0.0,"(7, 2)","(8, 2)",False,True,True
+179,4,0.0,"(8, 2)","(9, 2)",False,True,True
+180,5,0.0,"(9, 2)","(8, 2)",False,True,False
+181,2,0.0,"(8, 2)","(8, 1)",False,True,True
+182,2,0.0,"(8, 1)","(8, 0)",False,True,True
+183,4,0.0,"(8, 0)","(9, 0)",False,True,True
+184,3,0.0,"(9, 0)","(9, 1)",False,True,True
+185,3,0.0,"(9, 1)","(9, 2)",False,True,True
+186,2,0.0,"(9, 2)","(9, 1)",False,True,False
+187,4,0.0,"(9, 1)","(10, 1)",False,True,True
+188,5,0.0,"(10, 1)","(9, 1)",False,True,False
+189,4,-2.0,"(9, 1)","(10, 1)",True,True,False
+190,5,0.0,"(10, 1)","(9, 1)",False,True,False
+191,2,0.0,"(9, 1)","(9, 0)",False,True,True
+192,3,0.0,"(9, 0)","(9, 1)",False,True,False
+193,4,-1.0,"(9, 1)","(10, 1)",True,True,True
+194,2,0.0,"(10, 1)","(10, 0)",False,True,True
+195,3,0.0,"(10, 0)","(10, 1)",False,True,False
+196,5,0.0,"(10, 1)","(9, 1)",False,True,True
+197,5,0.0,"(9, 1)","(8, 1)",False,True,True
+198,5,0.0,"(8, 1)","(7, 1)",False,True,True
+199,3,0.0,"(7, 1)","(7, 2)",False,True,True
+200,1,0.0,"(7, 2)","(7, 2)",False,True,True
+201,4,0.0,"(7, 2)","(8, 2)",False,True,True
+202,2,0.0,"(8, 2)","(8, 1)",False,True,True
+203,5,-1.0,"(8, 1)","(7, 1)",True,True,True
+204,2,0.0,"(7, 1)","(7, 0)",False,True,True
+205,5,-4.0,"(7, 0)","(6, 0)",True,True,True
+206,4,0.0,"(6, 0)","(7, 0)",False,True,False
+207,1,-2.0,"(7, 0)","(7, 0)",True,True,True
+208,4,0.0,"(7, 0)","(8, 0)",False,True,True
+209,3,0.0,"(8, 0)","(8, 1)",False,True,True
+210,3,0.0,"(8, 1)","(8, 2)",False,True,True
+211,2,0.0,"(8, 2)","(8, 1)",False,True,False
+212,3,0.0,"(8, 1)","(8, 2)",False,True,False
+213,2,0.0,"(8, 2)","(8, 1)",False,True,False
+214,2,0.0,"(8, 1)","(8, 0)",False,True,True
+215,3,0.0,"(8, 0)","(8, 1)",False,True,False
+216,2,0.0,"(8, 1)","(8, 0)",False,True,False
+217,4,0.0,"(8, 0)","(9, 0)",False,True,True
+218,1,0.0,"(9, 0)","(9, 0)",False,True,True
+219,4,0.0,"(9, 0)","(10, 0)",False,True,True
+220,3,0.0,"(10, 0)","(10, 1)",False,True,True
+221,3,-1.0,"(10, 1)","(10, 2)",True,True,True
+222,5,0.0,"(10, 2)","(9, 2)",False,True,True
+223,2,0.0,"(9, 2)","(9, 1)",False,True,True
+224,1,0.0,"(9, 1)","(9, 1)",False,True,True
+225,4,0.0,"(9, 1)","(10, 1)",False,True,True
+226,2,0.0,"(10, 1)","(10, 0)",False,False,True
+227,3,0.0,"(10, 0)","(10, 1)",False,True,False
+228,4,0.0,"(10, 1)","(11, 1)",False,True,True
+229,4,0.0,"(11, 1)","(12, 1)",False,False,True
+230,3,0.0,"(12, 1)","(12, 2)",False,True,True
+231,1,0.0,"(12, 2)","(12, 2)",False,True,True
+232,3,0.0,"(12, 2)","(12, 3)",False,False,True
+233,1,0.0,"(12, 3)","(12, 3)",False,True,True
+234,4,0.0,"(12, 3)","(12, 3)",False,True,True
+235,3,0.0,"(12, 3)","(12, 4)",False,True,True
+236,1,0.0,"(12, 4)","(12, 4)",False,True,True
+237,1,0.0,"(12, 4)","(12, 4)",False,True,True
+238,1,0.0,"(12, 4)","(12, 4)",False,True,True
+239,1,0.0,"(12, 4)","(12, 4)",False,True,True
+240,1,0.0,"(12, 4)","(12, 4)",False,True,True
+241,1,0.0,"(12, 4)","(12, 4)",False,True,True
+242,2,0.0,"(12, 4)","(12, 3)",False,True,True
+243,3,0.0,"(12, 3)","(12, 4)",False,True,False
+244,1,0.0,"(12, 4)","(12, 4)",False,True,True
+245,1,-1.0,"(12, 4)","(12, 4)",True,True,True
+246,3,0.0,"(12, 4)","(12, 5)",False,True,True
+247,5,-1.0,"(12, 5)","(11, 5)",True,True,True
+248,2,0.0,"(11, 5)","(11, 4)",False,True,True
+249,2,0.0,"(11, 4)","(11, 3)",False,True,True
+250,4,0.0,"(11, 3)","(12, 3)",False,True,True
+251,4,-2.0,"(12, 3)","(12, 3)",True,True,True
+252,2,0.0,"(12, 3)","(12, 2)",False,True,True
+253,2,-1.0,"(12, 2)","(12, 1)",True,True,True
+254,2,0.0,"(12, 1)","(12, 0)",False,True,True
+255,5,0.0,"(12, 0)","(11, 0)",False,True,True
+256,5,0.0,"(11, 0)","(10, 0)",False,True,True
+257,4,-2.0,"(10, 0)","(11, 0)",True,True,False
+258,5,0.0,"(11, 0)","(10, 0)",False,True,False
+259,5,-1.0,"(10, 0)","(9, 0)",True,True,True
+260,5,0.0,"(9, 0)","(8, 0)",False,True,True
+261,4,0.0,"(8, 0)","(9, 0)",False,True,False
+262,3,0.0,"(9, 0)","(9, 1)",False,True,True
+263,1,0.0,"(9, 1)","(9, 1)",False,True,True
+264,5,0.0,"(9, 1)","(8, 1)",False,True,True
+265,2,0.0,"(8, 1)","(8, 0)",False,True,True
+266,5,0.0,"(8, 0)","(7, 0)",False,True,True
+267,5,0.0,"(7, 0)","(6, 0)",False,True,True
+268,3,0.0,"(6, 0)","(6, 1)",False,True,True
+269,3,0.0,"(6, 1)","(6, 2)",False,True,True
+270,3,0.0,"(6, 2)","(6, 3)",False,True,True
+271,4,0.0,"(6, 3)","(7, 3)",False,True,True
+272,3,0.0,"(7, 3)","(7, 4)",False,True,True
+273,4,0.0,"(7, 4)","(8, 4)",False,True,True
+274,5,0.0,"(8, 4)","(7, 4)",False,True,False
+275,1,-1.0,"(7, 4)","(7, 4)",True,True,True
+276,3,0.0,"(7, 4)","(7, 5)",False,True,True
+277,2,0.0,"(7, 5)","(7, 4)",False,True,False
+278,2,0.0,"(7, 4)","(7, 3)",False,True,True
+279,2,2.0,"(7, 3)","(7, 2)",True,True,True
+280,4,0.0,"(7, 2)","(8, 2)",False,True,True
+281,2,0.0,"(8, 2)","(8, 1)",False,True,True
+282,2,0.0,"(8, 1)","(8, 0)",False,True,True
+283,5,0.0,"(8, 0)","(7, 0)",False,True,True
+284,5,0.0,"(7, 0)","(6, 0)",False,True,True
+285,3,0.0,"(6, 0)","(6, 1)",False,True,True
+286,4,0.0,"(6, 1)","(7, 1)",False,True,True
+287,2,0.0,"(7, 1)","(7, 0)",False,True,True
+288,4,0.0,"(7, 0)","(8, 0)",False,True,True
+289,3,0.0,"(8, 0)","(8, 1)",False,True,True
+290,4,0.0,"(8, 1)","(9, 1)",False,True,True
+291,5,0.0,"(9, 1)","(8, 1)",False,True,False
+292,5,0.0,"(8, 1)","(7, 1)",False,True,True
+293,5,0.0,"(7, 1)","(6, 1)",False,True,True
+294,3,0.0,"(6, 1)","(6, 2)",False,True,True
+295,4,0.0,"(6, 2)","(7, 2)",False,True,True
+296,5,0.0,"(7, 2)","(6, 2)",False,True,False
+297,4,0.0,"(6, 2)","(7, 2)",False,True,False
+298,2,0.0,"(7, 2)","(7, 1)",False,True,True
+299,4,0.0,"(7, 1)","(8, 1)",False,True,True
+300,2,0.0,"(8, 1)","(8, 0)",False,True,True
+301,5,0.0,"(8, 0)","(7, 0)",False,True,True
+302,5,0.0,"(7, 0)","(6, 0)",False,True,True
+303,5,0.0,"(6, 0)","(5, 0)",False,True,True
+304,2,0.0,"(5, 0)","(5, 0)",False,True,True
+305,3,-1.0,"(5, 0)","(5, 1)",True,True,True
+306,4,0.0,"(5, 1)","(6, 1)",False,True,True
+307,5,-1.0,"(6, 1)","(5, 1)",True,True,False
+308,3,0.0,"(5, 1)","(5, 2)",False,True,True
+309,2,0.0,"(5, 2)","(5, 1)",False,True,False
+310,2,0.0,"(5, 1)","(5, 0)",False,True,True
+311,3,0.0,"(5, 0)","(5, 1)",False,True,False
+312,1,0.0,"(5, 1)","(5, 1)",False,True,True
+313,1,0.0,"(5, 1)","(5, 1)",False,True,True
+314,2,0.0,"(5, 1)","(5, 0)",False,True,True
+315,5,0.0,"(5, 0)","(4, 0)",False,True,True
+316,3,0.0,"(4, 0)",,False,True,True
+317,2,0.0,,"(4, 0)",False,True,False
+318,1,0.0,"(4, 0)","(4, 0)",False,True,True
+319,4,-1.0,"(4, 0)","(5, 0)",True,True,True
+320,2,0.0,"(5, 0)","(5, 0)",False,True,True
+321,3,-2.0,"(5, 0)","(5, 1)",True,True,True
+322,3,0.0,"(5, 1)","(5, 2)",False,True,True
+323,5,0.0,"(5, 2)",,False,True,True
+324,2,0.0,,,False,True,True
+325,1,2.0,,,True,True,True
+326,4,0.0,,"(5, 1)",False,True,True
+327,4,0.0,"(5, 1)","(6, 1)",False,True,True
+328,4,0.0,"(6, 1)","(7, 1)",False,True,True
+329,2,0.0,"(7, 1)","(7, 0)",False,True,True
+330,4,0.0,"(7, 0)","(8, 0)",False,True,True
+331,4,0.0,"(8, 0)","(9, 0)",False,True,True
+332,2,0.0,"(9, 0)","(9, 0)",False,True,True
+333,5,-1.0,"(9, 0)","(8, 0)",True,True,True
+334,3,0.0,"(8, 0)","(8, 1)",False,True,True
+335,2,0.0,"(8, 1)","(8, 0)",False,True,False
+336,3,0.0,"(8, 0)","(8, 1)",False,True,False
+337,2,0.0,"(8, 1)","(8, 0)",False,True,False
+338,3,0.0,"(8, 0)","(8, 1)",False,True,False
+339,5,0.0,"(8, 1)","(7, 1)",False,True,True
+340,5,0.0,"(7, 1)","(6, 1)",False,True,True
+341,3,-2.0,"(6, 1)","(6, 2)",True,True,True
+342,2,0.0,"(6, 2)","(6, 1)",False,True,False
+343,4,0.0,"(6, 1)","(7, 1)",False,True,True
+344,4,0.0,"(7, 1)","(8, 1)",False,True,True
+345,2,-1.0,"(8, 1)","(8, 0)",True,True,True
+346,5,0.0,"(8, 0)","(7, 0)",False,True,True
+347,5,0.0,"(7, 0)","(6, 0)",False,True,True
+348,4,0.0,"(6, 0)","(7, 0)",False,True,False
+349,3,0.0,"(7, 0)","(7, 1)",False,True,True
+350,2,0.0,"(7, 1)","(7, 0)",False,True,False
+351,3,0.0,"(7, 0)","(7, 1)",False,True,False
+352,5,0.0,"(7, 1)","(6, 1)",False,True,True
+353,5,0.0,"(6, 1)","(5, 1)",False,True,True
+354,2,0.0,"(5, 1)","(5, 0)",False,True,True
+355,3,0.0,"(5, 0)","(5, 1)",False,True,False
+356,4,0.0,"(5, 1)","(6, 1)",False,True,True
+357,3,0.0,"(6, 1)","(6, 2)",False,True,True
+358,3,0.0,"(6, 2)","(6, 3)",False,True,True
+359,2,0.0,"(6, 3)","(6, 2)",False,True,False
+360,5,0.0,"(6, 2)","(5, 2)",False,True,True
+361,2,0.0,"(5, 2)","(5, 1)",False,True,True
+362,3,0.0,"(5, 1)","(5, 2)",False,True,False
+363,2,0.0,"(5, 2)","(5, 1)",False,True,False
+364,2,0.0,"(5, 1)","(5, 0)",False,True,True
+365,2,-1.0,"(5, 0)","(5, 0)",True,True,True
+366,3,0.0,"(5, 0)","(5, 1)",False,True,True
+367,5,0.0,"(5, 1)","(4, 1)",False,True,True
+368,2,0.0,"(4, 1)","(4, 0)",False,True,True
+369,3,-1.0,"(4, 0)","(4, 1)",True,True,False
+370,5,0.0,"(4, 1)","(3, 1)",False,True,True
+371,4,0.0,"(3, 1)","(4, 1)",False,True,False
+372,1,0.0,"(4, 1)","(4, 1)",False,True,True
+373,1,0.0,"(4, 1)","(4, 1)",False,True,True
+374,3,0.0,"(4, 1)",,False,True,True
+375,4,0.0,,"(5, 2)",False,True,True
+376,5,0.0,"(5, 2)",,False,True,False
+377,1,0.0,,,False,True,True
+378,1,0.0,,,False,True,True
+379,5,0.0,,"(3, 2)",False,True,True
+380,4,0.0,"(3, 2)",,False,True,False
+381,2,0.0,,,False,True,True
+382,2,0.0,,"(4, 0)",False,True,True
+383,2,0.0,"(4, 0)",,False,True,False
+384,5,0.0,,"(3, 0)",False,True,True
+385,4,0.0,"(3, 0)",,False,True,False
+386,3,0.0,,,False,True,True
+387,5,0.0,,"(3, 1)",False,True,True
+388,1,0.0,"(3, 1)","(3, 1)",False,True,True
+389,5,-1.0,"(3, 1)",,True,True,True
+390,3,0.0,,,False,True,True
+391,5,0.0,,"(1, 2)",False,True,True
+392,1,0.0,"(1, 2)","(1, 2)",False,True,True
+393,2,0.0,"(1, 2)","(1, 1)",False,True,True
+394,3,0.0,"(1, 1)","(1, 2)",False,True,False
+395,5,0.0,"(1, 2)","(1, 2)",False,True,True
+396,4,0.0,"(1, 2)","(2, 2)",False,True,True
+397,2,-2.0,"(2, 2)","(2, 1)",True,True,True
+398,3,0.0,"(2, 1)","(2, 2)",False,True,False
+399,3,-1.0,"(2, 2)",,True,True,True
+400,5,0.0,,"(1, 3)",False,True,True
+401,1,0.0,"(1, 3)","(1, 3)",False,True,True
+402,3,0.0,"(1, 3)","(1, 4)",False,True,True
+403,4,0.0,"(1, 4)",,False,True,True
+404,3,0.0,,"(2, 5)",False,True,True
+405,3,0.0,"(2, 5)","(2, 6)",False,True,True
+406,2,0.0,"(2, 6)","(2, 5)",False,True,False
+407,2,0.0,"(2, 5)","(2, 4)",False,True,True
+408,2,0.0,"(2, 4)",,False,True,True
+409,3,0.0,,"(2, 4)",False,True,False
+410,4,0.0,"(2, 4)","(3, 4)",False,True,True
+411,5,0.0,"(3, 4)","(2, 4)",False,True,False
+412,3,0.0,"(2, 4)","(2, 5)",False,True,True
+413,2,0.0,"(2, 5)","(2, 4)",False,True,False
+414,3,0.0,"(2, 4)","(2, 5)",False,True,False
+415,5,0.0,"(2, 5)","(1, 5)",False,True,True
+416,3,0.0,"(1, 5)","(1, 6)",False,True,True
+417,4,0.0,"(1, 6)",,False,True,True
+418,3,0.0,,"(2, 7)",False,True,True
+419,2,0.0,"(2, 7)",,False,True,False
+420,2,0.0,,"(2, 5)",False,True,True
+421,3,0.0,"(2, 5)",,False,True,False
+422,2,0.0,,,False,True,True
+423,2,-1.0,,"(2, 4)",True,True,True
+424,3,0.0,"(2, 4)",,False,True,False
+425,4,0.0,,"(3, 5)",False,True,True
+426,2,0.0,"(3, 5)","(3, 4)",False,True,True
+427,4,0.0,"(3, 4)",,False,True,True
+428,4,0.0,,"(5, 4)",False,True,True
+429,5,0.0,"(5, 4)",,False,True,False
+430,2,0.0,,"(4, 3)",False,True,True
+431,5,0.0,"(4, 3)","(3, 3)",False,True,True
+432,4,0.0,"(3, 3)","(4, 3)",False,True,False
+433,1,0.0,"(4, 3)",,False,True,True
+434,5,0.0,,"(3, 3)",False,True,True
+435,1,2.0,"(3, 3)","(3, 3)",True,True,True
+436,1,0.0,"(3, 3)","(3, 3)",False,True,True
+437,4,-1.0,"(3, 3)",,True,True,True
+438,5,0.0,,"(3, 3)",False,True,False
+439,5,0.0,"(3, 3)","(2, 3)",False,True,True
+440,1,0.0,"(2, 3)","(2, 3)",False,True,True
+441,3,0.0,"(2, 3)","(2, 4)",False,True,True
+442,1,0.0,"(2, 4)","(2, 4)",False,True,True
+443,4,2.0,"(2, 4)","(3, 4)",True,True,True
+444,4,0.0,"(3, 4)","(4, 4)",False,True,True
+445,1,-1.0,"(4, 4)",,True,True,True
+446,5,0.0,,"(3, 4)",False,True,True
+447,5,-1.0,"(3, 4)","(2, 4)",True,True,True
+448,2,0.0,"(2, 4)","(2, 3)",False,True,True
+449,4,-2.0,"(2, 3)","(3, 3)",True,True,True
+450,2,0.0,"(3, 3)","(3, 2)",False,True,True
+451,1,0.0,"(3, 2)","(3, 2)",False,True,True
+452,4,0.0,"(3, 2)",,False,True,True
+453,2,0.0,,,False,True,True
+454,4,0.0,,"(5, 1)",False,True,True
+455,5,0.0,"(5, 1)",,False,True,False
+456,4,0.0,,"(5, 1)",False,True,False
+457,2,-1.0,"(5, 1)","(5, 0)",True,True,True
+458,3,0.0,"(5, 0)","(5, 1)",False,True,False
+459,5,0.0,"(5, 1)","(4, 1)",False,True,True
+460,2,0.0,"(4, 1)",,False,True,True
+461,2,0.0,,"(4, 0)",False,True,True
+462,2,0.0,"(4, 0)","(4, 0)",False,True,True
+463,3,-1.0,"(4, 0)","(4, 1)",True,True,True
+464,3,0.0,"(4, 1)",,False,True,True
+465,5,0.0,,"(3, 2)",False,True,True
+466,1,0.0,"(3, 2)","(3, 2)",False,True,True
+467,2,0.0,"(3, 2)","(3, 1)",False,True,True
+468,5,0.0,"(3, 1)","(2, 1)",False,True,True
+469,5,-2.0,"(2, 1)","(1, 1)",True,True,True
+470,4,0.0,"(1, 1)","(2, 1)",False,True,False
+471,3,-1.0,"(2, 1)","(2, 2)",True,True,True
+472,5,0.0,"(2, 2)","(1, 2)",False,True,True
+473,4,0.0,"(1, 2)","(2, 2)",False,True,False
+474,3,0.0,"(2, 2)","(2, 3)",False,True,True
+475,5,0.0,"(2, 3)","(1, 3)",False,True,True
+476,3,0.0,"(1, 3)","(1, 4)",False,True,True
+477,2,0.0,"(1, 4)","(1, 3)",False,True,False
+478,2,0.0,"(1, 3)","(1, 2)",False,True,True
+479,4,0.0,"(1, 2)","(2, 2)",False,True,True
+480,3,0.0,"(2, 2)","(2, 3)",False,True,True
+481,4,0.0,"(2, 3)","(3, 3)",False,True,True
+482,2,0.0,"(3, 3)","(3, 2)",False,True,True
+483,2,0.0,"(3, 2)","(3, 1)",False,True,True
+484,5,0.0,"(3, 1)","(2, 1)",False,True,True
+485,5,0.0,"(2, 1)","(1, 1)",False,True,True
+486,2,0.0,"(1, 1)","(1, 0)",False,True,True
+487,4,-1.0,"(1, 0)","(2, 0)",True,True,True
+488,3,0.0,"(2, 0)","(2, 1)",False,True,True
+489,1,0.0,"(2, 1)","(2, 1)",False,True,True
+490,2,0.0,"(2, 1)","(2, 0)",False,True,True
+491,3,0.0,"(2, 0)","(2, 1)",False,True,False
+492,5,0.0,"(2, 1)","(1, 1)",False,True,True
+493,5,0.0,"(1, 1)","(1, 1)",False,True,True
+494,3,0.0,"(1, 1)","(1, 2)",False,True,True
+495,4,0.0,"(1, 2)","(2, 2)",False,True,True
+496,3,0.0,"(2, 2)",,False,True,True
+497,2,-1.0,,"(2, 2)",True,True,False
+498,2,0.0,"(2, 2)","(2, 1)",False,True,True
+499,3,0.0,"(2, 1)","(2, 2)",False,True,False
+500,2,0.0,"(2, 2)","(2, 1)",False,True,False
+501,1,0.0,"(2, 1)","(2, 1)",False,True,True
+502,5,0.0,"(2, 1)","(1, 1)",False,True,True
+503,2,0.0,"(1, 1)","(1, 0)",False,True,True
+504,3,0.0,"(1, 0)","(1, 1)",False,True,False
+505,3,0.0,"(1, 1)","(1, 2)",False,True,True
+506,1,0.0,"(1, 2)","(1, 2)",False,True,True
+507,2,0.0,"(1, 2)","(1, 1)",False,True,True
+508,5,0.0,"(1, 1)","(1, 1)",False,True,True
+509,4,0.0,"(1, 1)",,False,True,True
+510,4,0.0,,"(3, 1)",False,True,True
+511,4,0.0,"(3, 1)",,False,True,False
+512,2,0.0,,"(4, 0)",False,True,True
+513,1,0.0,"(4, 0)",,False,True,False
+514,5,0.0,,"(3, 0)",False,True,True
+515,5,0.0,"(3, 0)",,False,True,False
+516,1,0.0,,,False,True,True
+517,4,0.0,,"(3, 0)",False,True,True
+518,4,0.0,"(3, 0)",,False,False,False
+519,2,0.0,,,False,False,False
+520,1,0.0,,,False,False,False
+521,5,0.0,,"(3, 0)",False,True,True
+522,2,0.0,"(3, 0)","(3, 0)",False,True,True
+523,3,0.0,"(3, 0)","(3, 1)",False,True,True
+524,1,0.0,"(3, 1)","(3, 1)",False,True,True
+525,5,0.0,"(3, 1)",,False,True,True
+526,2,0.0,,,False,True,True
+527,2,0.0,,,False,True,True
+528,2,0.0,,,False,True,True
+529,2,0.0,,,False,True,True
+530,4,0.0,,"(3, 0)",False,True,True
+531,3,0.0,"(3, 0)","(3, 1)",False,True,True
+532,5,0.0,"(3, 1)",,False,True,True
+533,5,0.0,,"(1, 1)",False,True,True
+534,3,0.0,"(1, 1)","(1, 2)",False,True,True
+535,2,0.0,"(1, 2)","(1, 1)",False,True,False
+536,3,0.0,"(1, 1)","(1, 2)",False,True,False
+537,3,-1.0,"(1, 2)","(1, 3)",True,True,True
+538,3,0.0,"(1, 3)","(1, 4)",False,True,True
+539,1,0.0,"(1, 4)","(1, 4)",False,True,True
+540,3,0.0,"(1, 4)","(1, 5)",False,True,True
+541,4,0.0,"(1, 5)","(2, 5)",False,True,True
+542,3,0.0,"(2, 5)","(2, 6)",False,True,True
+543,5,0.0,"(2, 6)","(1, 6)",False,True,True
+544,2,0.0,"(1, 6)","(1, 5)",False,True,True
+545,1,0.0,"(1, 5)","(1, 5)",False,True,True
+546,2,0.0,"(1, 5)","(1, 4)",False,True,True
+547,4,0.0,"(1, 4)","(2, 4)",False,True,True
+548,2,0.0,"(2, 4)","(2, 3)",False,True,True
+549,5,0.0,"(2, 3)","(1, 3)",False,True,True
+550,5,0.0,"(1, 3)","(1, 3)",False,True,True
+551,1,0.0,"(1, 3)","(1, 3)",False,True,True
+552,3,0.0,"(1, 3)","(1, 4)",False,True,True
+553,4,-3.0,"(1, 4)","(2, 4)",True,True,True
+554,1,0.0,"(2, 4)","(2, 4)",False,True,True
+555,2,0.0,"(2, 4)","(2, 3)",False,True,True
+556,2,0.0,"(2, 3)","(2, 2)",False,True,True
+557,2,-2.0,"(2, 2)","(2, 1)",True,True,True
+558,2,0.0,"(2, 1)",,False,True,True
+559,2,0.0,,,False,True,True
+560,2,0.0,,,False,True,True
+561,5,0.0,,"(1, 0)",False,True,True
+562,4,0.0,"(1, 0)","(2, 0)",False,True,True
+563,1,0.0,"(2, 0)","(2, 0)",False,True,True
+564,5,2.0,"(2, 0)","(1, 0)",True,True,True
+565,3,-1.0,"(1, 0)","(1, 1)",True,True,True
+566,3,0.0,"(1, 1)","(1, 2)",False,True,True
+567,4,0.0,"(1, 2)","(2, 2)",False,True,True
+568,2,0.0,"(2, 2)","(2, 1)",False,True,True
+569,1,0.0,"(2, 1)","(2, 1)",False,True,True
+570,1,0.0,"(2, 1)","(2, 1)",False,True,True
+571,1,0.0,"(2, 1)","(2, 1)",False,True,True
+572,2,0.0,"(2, 1)","(2, 0)",False,True,True
+573,3,0.0,"(2, 0)","(2, 1)",False,True,False
+574,1,2.0,"(2, 1)","(2, 1)",True,True,True
+575,5,0.0,"(2, 1)","(1, 1)",False,True,True
+576,5,0.0,"(1, 1)","(1, 1)",False,True,True
+577,4,0.0,"(1, 1)","(2, 1)",False,True,True
+578,3,0.0,"(2, 1)","(2, 2)",False,True,True
+579,3,-2.0,"(2, 2)","(2, 3)",True,True,True
+580,1,2.0,"(2, 3)","(2, 3)",True,True,True
+581,4,0.0,"(2, 3)","(3, 3)",False,True,True
+582,2,0.0,"(3, 3)","(3, 2)",False,True,True
+583,5,0.0,"(3, 2)","(2, 2)",False,True,True
+584,4,0.0,"(2, 2)","(3, 2)",False,True,False
+585,3,0.0,"(3, 2)","(3, 3)",False,True,True
+586,2,0.0,"(3, 3)","(3, 2)",False,True,False
+587,5,0.0,"(3, 2)","(2, 2)",False,True,True
+588,3,0.0,"(2, 2)","(2, 3)",False,True,True
+589,3,0.0,"(2, 3)",,False,True,True
+590,2,0.0,,"(2, 3)",False,True,False
+591,3,0.0,"(2, 3)",,False,True,False
+592,4,0.0,,"(3, 4)",False,True,True
+593,3,0.0,"(3, 4)","(3, 5)",False,True,True
+594,4,0.0,"(3, 5)","(4, 5)",False,True,True
+595,2,0.0,"(4, 5)",,False,True,True
+596,2,0.0,,,False,True,True
+597,2,0.0,,,False,True,True
+598,2,0.0,,,False,True,True
+599,2,0.0,,"(4, 0)",False,True,True
+600,3,0.0,"(4, 0)",,False,True,False
+601,5,-1.0,,"(3, 1)",True,True,True
+602,4,0.0,"(3, 1)",,False,True,False
+603,1,0.0,,,False,True,True
+604,4,0.0,,"(5, 1)",False,True,True
+605,5,0.0,"(5, 1)",,False,True,False
+606,4,0.0,,"(5, 1)",False,True,False
+607,5,0.0,"(5, 1)",,False,True,False
+608,4,0.0,,"(5, 1)",False,True,False
+609,4,0.0,"(5, 1)","(6, 1)",False,True,True
+610,5,0.0,"(6, 1)","(5, 1)",False,True,False
+611,2,0.0,"(5, 1)","(5, 0)",False,True,True
+612,3,0.0,"(5, 0)","(5, 1)",False,True,False
+613,2,-1.0,"(5, 1)","(5, 0)",True,True,False
+614,5,0.0,"(5, 0)",,False,True,True
+615,5,0.0,,"(3, 0)",False,True,True
+616,3,0.0,"(3, 0)","(3, 1)",False,True,True
+617,3,0.0,"(3, 1)","(3, 2)",False,True,True
+618,3,0.0,"(3, 2)","(3, 3)",False,True,True
+619,2,0.0,"(3, 3)","(3, 2)",False,True,False
+620,2,0.0,"(3, 2)","(3, 1)",False,True,True
+621,4,0.0,"(3, 1)","(4, 1)",False,True,True
+622,5,0.0,"(4, 1)","(3, 1)",False,True,False
+623,5,0.0,"(3, 1)","(2, 1)",False,True,True
+624,4,0.0,"(2, 1)","(3, 1)",False,True,False
+625,3,0.0,"(3, 1)","(3, 2)",False,True,True
+626,4,0.0,"(3, 2)","(4, 2)",False,True,True
+627,3,0.0,"(4, 2)",,False,True,True
+628,2,0.0,,"(4, 2)",False,True,False
+629,3,0.0,"(4, 2)",,False,True,False
+630,5,0.0,,"(3, 3)",False,True,True
+631,4,0.0,"(3, 3)",,False,True,False
+632,5,0.0,,"(3, 3)",False,True,False
+633,2,-1.0,"(3, 3)","(3, 2)",True,True,True
+634,5,0.0,"(3, 2)",,False,True,True
+635,2,0.0,,,False,True,True
+636,4,0.0,,"(3, 1)",False,True,True
+637,2,0.0,"(3, 1)","(3, 0)",False,True,True
+638,5,0.0,"(3, 0)","(2, 0)",False,True,True
+639,1,0.0,"(2, 0)","(2, 0)",False,True,True
+640,3,0.0,"(2, 0)",,False,True,True
+641,2,-1.0,,"(2, 0)",True,True,False
+642,3,0.0,"(2, 0)",,False,True,False
+643,5,0.0,,"(1, 1)",False,True,True
+644,3,0.0,"(1, 1)","(1, 2)",False,True,True
+645,3,0.0,"(1, 2)","(1, 3)",False,True,True
+646,4,0.0,"(1, 3)","(2, 3)",False,True,True
+647,4,0.0,"(2, 3)","(3, 3)",False,True,True
+648,4,0.0,"(3, 3)","(4, 3)",False,True,True
+649,1,0.0,"(4, 3)","(4, 3)",False,True,True
+650,1,0.0,"(4, 3)","(4, 3)",False,True,True
+651,3,0.0,"(4, 3)","(4, 4)",False,True,True
+652,2,0.0,"(4, 4)","(4, 3)",False,True,False
+653,2,0.0,"(4, 3)","(4, 2)",False,True,True
+654,3,0.0,"(4, 2)","(4, 3)",False,True,False
+655,1,0.0,"(4, 3)","(4, 3)",False,True,True
+656,2,0.0,"(4, 3)","(4, 2)",False,False,True
+657,4,2.0,"(4, 2)","(5, 2)",True,True,True
+658,2,0.0,"(5, 2)","(5, 1)",False,True,True
+659,3,0.0,"(5, 1)","(5, 2)",False,True,False
+660,5,0.0,"(5, 2)","(4, 2)",False,True,True
+661,2,0.0,"(4, 2)","(4, 1)",False,True,True
+662,2,0.0,"(4, 1)","(4, 0)",False,True,True
+663,5,0.0,"(4, 0)","(3, 0)",False,True,True
+664,3,0.0,"(3, 0)","(3, 1)",False,True,True
+665,5,0.0,"(3, 1)","(2, 1)",False,True,True
+666,2,0.0,"(2, 1)","(2, 0)",False,True,True
+667,3,0.0,"(2, 0)","(2, 1)",False,True,False
+668,2,0.0,"(2, 1)","(2, 0)",False,True,False
+669,1,0.0,"(2, 0)","(2, 0)",False,True,True
+670,3,0.0,"(2, 0)","(2, 1)",False,True,True
+671,1,2.0,"(2, 1)","(2, 1)",True,True,True
+672,5,0.0,"(2, 1)","(1, 1)",False,True,True
+673,4,0.0,"(1, 1)","(2, 1)",False,True,False
+674,4,0.0,"(2, 1)","(3, 1)",False,True,True
+675,2,0.0,"(3, 1)","(3, 0)",False,True,True
+676,2,0.0,"(3, 0)","(3, 0)",False,True,True
+677,3,0.0,"(3, 0)","(3, 1)",False,True,True
+678,3,0.0,"(3, 1)","(3, 2)",False,True,True
+679,2,0.0,"(3, 2)","(3, 1)",False,True,False
+680,5,0.0,"(3, 1)","(2, 1)",False,True,True
+681,1,0.0,"(2, 1)","(2, 1)",False,True,True
+682,4,0.0,"(2, 1)","(3, 1)",False,True,True
+683,3,0.0,"(3, 1)","(3, 2)",False,True,True
+684,5,0.0,"(3, 2)",,False,True,True
+685,2,0.0,,,False,True,True
+686,2,0.0,,"(2, 0)",False,True,True
+687,3,0.0,"(2, 0)",,False,True,False
+688,4,0.0,,"(3, 1)",False,True,True
+689,2,0.0,"(3, 1)","(3, 0)",False,True,True
+690,3,0.0,"(3, 0)","(3, 1)",False,True,False
+691,4,0.0,"(3, 1)","(4, 1)",False,True,True
+692,4,0.0,"(4, 1)","(5, 1)",False,True,True
+693,4,0.0,"(5, 1)","(6, 1)",False,True,True
+694,4,0.0,"(6, 1)","(7, 1)",False,True,True
+695,4,0.0,"(7, 1)","(8, 1)",False,True,True
+696,2,0.0,"(8, 1)","(8, 0)",False,True,True
+697,4,0.0,"(8, 0)","(9, 0)",False,True,True
+698,2,0.0,"(9, 0)","(9, 0)",False,True,True
+699,4,0.0,"(9, 0)","(10, 0)",False,True,True
+700,4,0.0,"(10, 0)","(11, 0)",False,True,True
+701,3,0.0,"(11, 0)","(11, 1)",False,True,True
+702,2,0.0,"(11, 1)","(11, 0)",False,True,False
+703,3,0.0,"(11, 0)","(11, 1)",False,True,False
+704,5,0.0,"(11, 1)","(10, 1)",False,True,True
+705,4,0.0,"(10, 1)","(11, 1)",False,True,False
+706,2,0.0,"(11, 1)","(11, 0)",False,True,True
+707,3,0.0,"(11, 0)","(11, 1)",False,True,False
+708,5,0.0,"(11, 1)","(10, 1)",False,True,True
+709,5,0.0,"(10, 1)","(9, 1)",False,True,True
+710,4,0.0,"(9, 1)","(10, 1)",False,True,False
+711,4,0.0,"(10, 1)","(11, 1)",False,True,True
+712,2,0.0,"(11, 1)","(11, 0)",False,True,True
+713,4,0.0,"(11, 0)","(12, 0)",False,True,True
+714,3,0.0,"(12, 0)","(12, 1)",False,True,True
+715,3,0.0,"(12, 1)","(12, 2)",False,True,True
+716,3,0.0,"(12, 2)","(12, 3)",False,True,True
+717,3,0.0,"(12, 3)","(12, 4)",False,True,True
+718,1,0.0,"(12, 4)","(12, 4)",False,True,True
+719,4,0.0,"(12, 4)","(12, 4)",False,True,True
+720,3,0.0,"(12, 4)","(12, 5)",False,True,True
+721,5,0.0,"(12, 5)","(11, 5)",False,True,True
+722,2,0.0,"(11, 5)","(11, 4)",False,True,True
+723,4,0.0,"(11, 4)","(12, 4)",False,True,True
+724,4,0.0,"(12, 4)","(12, 4)",False,True,True
+725,2,0.0,"(12, 4)","(12, 3)",False,True,True
+726,2,0.0,"(12, 3)","(12, 2)",False,True,True
+727,5,0.0,"(12, 2)","(11, 2)",False,True,True
+728,4,0.0,"(11, 2)","(12, 2)",False,True,False
+729,4,0.0,"(12, 2)","(12, 2)",False,True,True
+730,5,0.0,"(12, 2)","(11, 2)",False,True,True
+731,2,0.0,"(11, 2)","(11, 1)",False,True,True
+732,1,0.0,"(11, 1)","(11, 1)",False,True,True
+733,2,0.0,"(11, 1)","(11, 0)",False,True,True
+734,5,0.0,"(11, 0)","(10, 0)",False,True,True
+735,3,0.0,"(10, 0)","(10, 1)",False,True,True
+736,5,0.0,"(10, 1)","(9, 1)",False,True,True
+737,5,0.0,"(9, 1)","(8, 1)",False,True,True
+738,2,0.0,"(8, 1)","(8, 0)",False,True,True
+739,4,0.0,"(8, 0)","(9, 0)",False,True,True
+740,5,0.0,"(9, 0)","(8, 0)",False,True,False
+741,5,0.0,"(8, 0)","(7, 0)",False,True,True
+742,4,0.0,"(7, 0)","(8, 0)",False,True,False
+743,5,0.0,"(8, 0)","(7, 0)",False,True,False
+744,5,0.0,"(7, 0)","(6, 0)",False,True,True
+745,4,0.0,"(6, 0)","(7, 0)",False,True,False
+746,5,0.0,"(7, 0)","(6, 0)",False,True,False
+747,1,0.0,"(6, 0)","(6, 0)",False,True,True
+748,5,2.0,"(6, 0)","(5, 0)",True,True,True
+749,4,0.0,"(5, 0)","(6, 0)",False,True,False
+750,3,0.0,"(6, 0)","(6, 1)",False,True,True
+751,4,0.0,"(6, 1)","(7, 1)",False,True,True
+752,4,0.0,"(7, 1)","(8, 1)",False,True,True
+753,4,0.0,"(8, 1)","(9, 1)",False,True,True
+754,3,0.0,"(9, 1)","(9, 2)",False,True,True
+755,4,0.0,"(9, 2)","(10, 2)",False,True,True
+756,2,0.0,"(10, 2)","(10, 1)",False,True,True
+757,3,0.0,"(10, 1)","(10, 2)",False,True,False
+758,2,0.0,"(10, 2)","(10, 1)",False,True,False
+759,3,-1.0,"(10, 1)","(10, 2)",True,True,False
+760,4,0.0,"(10, 2)","(11, 2)",False,True,True
+761,4,0.0,"(11, 2)","(12, 2)",False,True,True
+762,5,0.0,"(12, 2)","(11, 2)",False,True,False
+763,3,0.0,"(11, 2)","(11, 3)",False,True,True
+764,5,0.0,"(11, 3)","(10, 3)",False,True,True
+765,4,0.0,"(10, 3)","(11, 3)",False,True,False
+766,5,0.0,"(11, 3)","(10, 3)",False,True,False
+767,4,0.0,"(10, 3)","(11, 3)",False,True,False
+768,2,0.0,"(11, 3)","(11, 2)",False,True,True
+769,5,0.0,"(11, 2)","(10, 2)",False,True,True
+770,5,0.0,"(10, 2)","(9, 2)",False,True,True
+771,5,0.0,"(9, 2)","(8, 2)",False,True,True
+772,2,0.0,"(8, 2)","(8, 1)",False,True,True
+773,3,0.0,"(8, 1)","(8, 2)",False,True,False
+774,1,0.0,"(8, 2)","(8, 2)",False,True,True
+775,5,0.0,"(8, 2)","(7, 2)",False,True,True
+776,5,0.0,"(7, 2)","(6, 2)",False,True,True
+777,5,0.0,"(6, 2)","(5, 2)",False,True,True
+778,5,0.0,"(5, 2)",,False,True,True
+779,4,0.0,,"(5, 2)",False,True,False
+780,2,0.0,"(5, 2)","(5, 1)",False,True,True
+781,2,0.0,"(5, 1)","(5, 0)",False,True,True
+782,3,0.0,"(5, 0)","(5, 1)",False,True,False
+783,4,0.0,"(5, 1)","(6, 1)",False,True,True
+784,5,0.0,"(6, 1)","(5, 1)",False,True,False
+785,5,0.0,"(5, 1)",,False,True,True
+786,2,0.0,,,False,True,True
+787,2,0.0,,,False,True,True
+788,2,0.0,,,False,True,True
+789,2,0.0,,,False,True,True
+790,3,0.0,,,False,True,True
+791,2,0.0,,"(4, 0)",False,True,True
+792,2,0.0,"(4, 0)","(4, 0)",False,True,True
+793,3,0.0,"(4, 0)",,False,True,True
+794,2,0.0,,,False,True,True
+795,2,0.0,,,False,True,True
+796,2,0.0,,,False,True,True
+797,5,0.0,,"(3, 0)",False,True,True
+798,2,0.0,"(3, 0)","(3, 0)",False,True,True
+799,2,0.0,"(3, 0)","(3, 0)",False,True,True
+800,3,0.0,"(3, 0)","(3, 1)",False,True,True
+801,4,0.0,"(3, 1)",,False,True,True
+802,2,0.0,,"(4, 0)",False,True,True
+803,3,0.0,"(4, 0)",,False,True,False
+804,4,0.0,,"(5, 1)",False,True,True
+805,2,0.0,"(5, 1)","(5, 0)",False,True,True
+806,5,0.0,"(5, 0)",,False,True,True
+807,2,0.0,,,False,True,True
+808,2,0.0,,,False,True,True
+809,2,0.0,,,False,True,True
+810,2,0.0,,,False,True,True
+811,3,0.0,,"(4, 1)",False,True,True
+812,3,0.0,"(4, 1)","(4, 2)",False,True,True
+813,2,0.0,"(4, 2)","(4, 1)",False,True,False
+814,2,0.0,"(4, 1)","(4, 0)",False,True,True
+815,5,0.0,"(4, 0)","(3, 0)",False,True,True
+816,2,0.0,"(3, 0)","(3, 0)",False,True,True
+817,4,0.0,"(3, 0)","(4, 0)",False,True,True
+818,3,0.0,"(4, 0)","(4, 1)",False,True,True
+819,3,0.0,"(4, 1)","(4, 2)",False,True,True
+820,2,0.0,"(4, 2)","(4, 1)",False,True,False
+821,3,0.0,"(4, 1)",,False,True,True
+822,5,0.0,,"(3, 2)",False,True,True
+823,5,0.0,"(3, 2)",,False,True,False
+824,3,0.0,,,False,True,True
+825,5,0.0,,"(1, 3)",False,True,True
+826,4,0.0,"(1, 3)","(2, 3)",False,True,True
+827,2,0.0,"(2, 3)",,False,True,True
+828,3,0.0,,"(2, 3)",False,True,False
+829,3,0.0,"(2, 3)",,False,True,False
+830,5,0.0,,"(1, 4)",False,True,True
+831,3,0.0,"(1, 4)","(1, 5)",False,True,True
+832,4,0.0,"(1, 5)",,False,True,True
+833,2,0.0,,,False,True,True
+834,4,0.0,,"(3, 4)",False,True,True
+835,2,0.0,"(3, 4)","(3, 3)",False,True,True
+836,2,0.0,"(3, 3)","(3, 2)",False,True,True
+837,5,0.0,"(3, 2)","(2, 2)",False,True,True
+838,3,0.0,"(2, 2)",,False,True,True
+839,2,0.0,,"(2, 2)",False,True,False
+840,3,0.0,"(2, 2)",,False,True,False
+841,2,0.0,,,False,True,True
+842,2,0.0,,"(2, 1)",False,True,True
+843,2,-1.0,"(2, 1)","(2, 0)",True,True,True
+844,3,0.0,"(2, 0)","(2, 1)",False,True,False
+845,1,2.0,"(2, 1)","(2, 1)",True,True,True
+846,1,0.0,"(2, 1)","(2, 1)",False,True,True
+847,1,2.0,"(2, 1)","(2, 1)",True,True,True
+848,3,0.0,"(2, 1)","(2, 2)",False,True,True
+849,2,0.0,"(2, 2)","(2, 1)",False,True,False
+850,2,0.0,"(2, 1)","(2, 0)",False,True,True
+851,3,0.0,"(2, 0)","(2, 1)",False,True,False
+852,2,0.0,"(2, 1)","(2, 0)",False,True,False
+853,2,2.0,"(2, 0)","(2, 0)",True,True,True
+854,3,0.0,"(2, 0)","(2, 1)",False,True,True
+855,5,0.0,"(2, 1)","(1, 1)",False,True,True
+856,3,0.0,"(1, 1)","(1, 2)",False,True,True
+857,4,0.0,"(1, 2)","(2, 2)",False,True,True
+858,3,0.0,"(2, 2)","(2, 3)",False,True,True
+859,4,0.0,"(2, 3)","(3, 3)",False,True,True
+860,2,0.0,"(3, 3)","(3, 2)",False,True,True
+861,5,0.0,"(3, 2)","(2, 2)",False,True,True
+862,2,0.0,"(2, 2)","(2, 1)",False,True,True
+863,5,0.0,"(2, 1)","(1, 1)",False,True,True
+864,4,0.0,"(1, 1)","(2, 1)",False,True,False
+865,3,0.0,"(2, 1)","(2, 2)",False,True,True
+866,2,0.0,"(2, 2)","(2, 1)",False,True,False
+867,5,0.0,"(2, 1)","(1, 1)",False,True,True
+868,2,0.0,"(1, 1)","(1, 0)",False,True,True
+869,4,-2.0,"(1, 0)","(2, 0)",True,True,True
+870,3,0.0,"(2, 0)","(2, 1)",False,True,True
+871,5,0.0,"(2, 1)","(1, 1)",False,True,True
+872,4,0.0,"(1, 1)","(2, 1)",False,True,False
+873,1,0.0,"(2, 1)","(2, 1)",False,True,True
+874,4,2.0,"(2, 1)","(3, 1)",True,True,True
+875,5,0.0,"(3, 1)","(2, 1)",False,True,False
+876,5,0.0,"(2, 1)","(1, 1)",False,True,True
+877,5,0.0,"(1, 1)","(1, 1)",False,True,True
+878,4,0.0,"(1, 1)","(2, 1)",False,True,True
+879,4,0.0,"(2, 1)","(3, 1)",False,True,True
+880,3,0.0,"(3, 1)","(3, 2)",False,True,True
+881,5,0.0,"(3, 2)","(2, 2)",False,True,True
+882,1,0.0,"(2, 2)","(2, 2)",False,True,True
+883,4,0.0,"(2, 2)","(3, 2)",False,True,True
+884,2,0.0,"(3, 2)","(3, 1)",False,True,True
+885,4,0.0,"(3, 1)",,False,True,True
+886,1,0.0,,,False,True,True
+887,3,0.0,,"(4, 2)",False,True,True
+888,5,0.0,"(4, 2)","(3, 2)",False,True,True
+889,2,0.0,"(3, 2)","(3, 1)",False,True,True
+890,2,0.0,"(3, 1)","(3, 0)",False,False,True
+891,3,0.0,"(3, 0)","(3, 1)",False,True,False
+892,5,0.0,"(3, 1)","(2, 1)",False,False,True
+893,5,0.0,"(2, 1)","(1, 1)",False,False,True
+894,3,0.0,"(1, 1)","(1, 2)",False,True,True
+895,2,0.0,"(1, 2)","(1, 1)",False,True,False
+896,3,0.0,"(1, 1)","(1, 2)",False,True,False
+897,4,0.0,"(1, 2)","(2, 2)",False,True,True
+898,3,0.0,"(2, 2)","(2, 3)",False,True,True
+899,3,0.0,"(2, 3)","(2, 4)",False,True,True
+900,2,0.0,"(2, 4)","(2, 3)",False,True,False
+901,1,0.0,"(2, 3)","(2, 3)",False,True,True
+902,1,0.0,"(2, 3)","(2, 3)",False,True,True
+903,1,0.0,"(2, 3)","(2, 3)",False,True,True
+904,5,0.0,"(2, 3)","(1, 3)",False,True,True
+905,5,0.0,"(1, 3)","(1, 3)",False,True,True
+906,4,0.0,"(1, 3)","(2, 3)",False,True,True
+907,2,0.0,"(2, 3)","(2, 2)",False,True,True
+908,2,0.0,"(2, 2)","(2, 1)",False,True,True
+909,4,0.0,"(2, 1)","(3, 1)",False,True,True
+910,3,0.0,"(3, 1)","(3, 2)",False,True,True
+911,2,0.0,"(3, 2)","(3, 1)",False,True,False
+912,2,0.0,"(3, 1)","(3, 0)",False,True,True
+913,3,0.0,"(3, 0)","(3, 1)",False,True,False
+914,5,0.0,"(3, 1)","(2, 1)",False,True,True
+915,3,0.0,"(2, 1)","(2, 2)",False,True,True
+916,4,0.0,"(2, 2)","(3, 2)",False,True,True
+917,2,0.0,"(3, 2)","(3, 1)",False,True,True
+918,1,0.0,"(3, 1)","(3, 1)",False,True,True
+919,5,0.0,"(3, 1)","(2, 1)",False,True,True
+920,3,0.0,"(2, 1)","(2, 2)",False,True,True
+921,1,0.0,"(2, 2)",,False,True,True
+922,2,0.0,,"(2, 1)",False,True,True
+923,2,0.0,"(2, 1)","(2, 0)",False,True,True
+924,4,0.0,"(2, 0)","(3, 0)",False,True,True
+925,4,0.0,"(3, 0)",,False,True,True
+926,2,0.0,,,False,True,True
+927,2,0.0,,,False,True,True
+928,2,0.0,,,False,True,True
+929,4,0.0,,"(5, 0)",False,True,True
+930,2,0.0,"(5, 0)","(5, 0)",False,True,True
+931,4,0.0,"(5, 0)","(6, 0)",False,True,True
+932,2,0.0,"(6, 0)","(6, 0)",False,True,True
+933,3,0.0,"(6, 0)","(6, 1)",False,True,True
+934,4,0.0,"(6, 1)","(7, 1)",False,True,True
+935,5,0.0,"(7, 1)","(6, 1)",False,True,False
+936,5,0.0,"(6, 1)","(5, 1)",False,True,True
+937,2,0.0,"(5, 1)","(5, 0)",False,True,True
+938,3,0.0,"(5, 0)","(5, 1)",False,True,False
+939,5,0.0,"(5, 1)",,False,True,True
+940,2,0.0,,"(4, 0)",False,True,True
+941,3,0.0,"(4, 0)",,False,True,False
+942,2,0.0,,"(4, 0)",False,True,False
+943,3,0.0,"(4, 0)",,False,True,False
+944,2,0.0,,,False,True,True
+945,5,0.0,,"(3, 0)",False,True,True
+946,5,0.0,"(3, 0)","(2, 0)",False,True,True
+947,3,0.0,"(2, 0)",,False,True,True
+948,4,0.0,,"(3, 1)",False,True,True
+949,5,0.0,"(3, 1)",,False,True,False
+950,2,0.0,,"(2, 0)",False,True,True
+951,2,0.0,"(2, 0)","(2, 0)",False,True,True
+952,2,0.0,"(2, 0)","(2, 0)",False,True,True
+953,2,0.0,"(2, 0)",,False,True,True
+954,5,0.0,,"(1, 0)",False,True,True

@@ -11,12 +11,23 @@ load_dotenv()
 def load_llm_config(path: str = None) -> dict:
     """
     Load LLM configuration for multiple APIs from a JSON file.
-    If no path is provided, read from .env `LLM_CONFIG_PATH`, else default to 'project/llm_config.json'.
+    If no path is provided, read from .env `LLM_CONFIG_PATH`, else default to 'llm_config.json' in project directory.
     Returns a dict of all available profiles.
     """
-    # Default path changed to 'project/llm_config.json' to be relative to GVGAI_LLM (CWD)
-    config_path = path or os.getenv("LLM_CONFIG_PATH", "project/llm_config.json")
-    full_path = Path(config_path) # Path will resolve this relative to CWD
+    if path:
+        # Use provided path as-is
+        full_path = Path(path)
+    else:
+        # Check environment variable first
+        env_path = os.getenv("LLM_CONFIG_PATH")
+        if env_path:
+            full_path = Path(env_path)
+        else:
+            # Default: find llm_config.json relative to this file's location
+            # This file is in project/llm/utils/config.py, so go up 2 levels to project/
+            current_file_dir = Path(__file__).parent  # project/llm/utils/
+            project_dir = current_file_dir.parent.parent  # project/
+            full_path = project_dir / "llm_config.json"
 
     if not full_path.exists():
         raise FileNotFoundError(f"LLM config file not found at: {full_path.resolve()}")

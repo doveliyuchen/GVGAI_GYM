@@ -1,0 +1,942 @@
+[
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "The bomberman '#' is located at row=2, col=5. The goal '$' is located at row=3, col=1.\nThe bomberman needs to move towards the goal.\nThe bomberman can move down.\nAction: 4\nI expect the bomberman to move down to row 3, col 5."
+  },
+  {
+    "role": "response",
+    "content": "The bomberman '#' is at row=2, col=5. The goal '$' is at row=3, col=1. I need to move the bomberman to the goal.\nFirst, let's try moving left to get out of the bomberman's current position.\nAction: 2\n```text\nACTION_LEFT\n```\nI expect the bomberman to move one step to the left."
+  },
+  {
+    "role": "response",
+    "content": "The avatar is currently at (2, 5). The goal is at (3, 1). I need to move the avatar towards the goal. There are breakable walls around, and enemies as well.\nFirst let's try to move LEFT.\nAction:2\nI expect the avatar to move to (2, 4)."
+  },
+  {
+    "role": "response",
+    "content": "Okay, I am the bomberman '#', currently at row 2, col 5. The goal is '$' at row 3, col 1. I need to navigate through the maze to reach the goal. There are breakable walls 'b' that I can potentially destroy using 'ACTION_USE'.\n\nFirst, I'll try moving down to see if I can move.\nAction: 4\nI expect to move down one row to row 3, col 5."
+  },
+  {
+    "role": "response",
+    "content": "Okay, I see that the bomberman '#' is at row 2, col 5. There is a goal '$' at row 3, col 1. I need to navigate the bomberman to the goal. There are wallBreak 'b' obstacles in the way, and I need to use them to clear the path.\n\nFirst, I should move the bomberman to the left to collect wallBreak 'b'.\nAction: 2\n```text\nI will move left to get a wallBreak 'b'.\n```"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "The avatar '#' is at (2,5). The goal '$' is at (3,1).\nThe shortest path to the goal seems blocked by wallBreak 'b' at (2,4) and wall '*'. I should try to break the wallBreak 'b' by moving towards it and using an action to break it.\nFirst move left towards (2,4).\nAction: 2"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "The avatar is currently at (2, 5). The goal is at (3, 1).\nI need to move the avatar to the goal.\nThe path is not clear. The avatar can move DOWN to pass through wallBreak (b) at (3,4), (4,4).\nAction: 4\nI expect the avatar to move down one square.```Action: 4```"
+  },
+  {
+    "role": "response",
+    "content": "The avatar 'a' is not present in the map, so I need to find the bomberman '#', and move it to the goal '$'. The bomberman is at row=2, col=5. The goal is at row=3, col=1.\nFirst, move down.\nAction: 4\nI expect the bomberman to move down to row 3, col 5."
+  },
+  {
+    "role": "response",
+    "content": "The avatar is at (3, 5). The goal wallBreak is at (3, 1). I need to move the avatar to the goal.\nAction: 2\nI will move left to approach the goal."
+  },
+  {
+    "role": "response",
+    "content": "The avatar is at (3, 5). The goal is at (3, 1). There are breakable walls around. I need to go left to reach the goal.\nAction: 2\nI'll move left to get closer to the goal."
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "The bomberman ('#') is at (3,5). The goal ('$') is at (3,1). There are wallBreaks ('b') scattered around. The strategy is to navigate to the goal. First I need to go left.\nAction: 2\nI expect to move towards the left to reach the goal."
+  },
+  {
+    "role": "response",
+    "content": "The avatar is currently at (3, 5), represented by '#'. The goal wallBreak is at (3, 1), represented by '$'. I need to move left to reach the goal.\nAction:2\nI will move left to approach the goal wallBreak."
+  },
+  {
+    "role": "response",
+    "content": "The bomberman '#' is currently at (3, 5). The goal wallBreak '$' is at (3, 1). I need to move left to reach the goal.\n\nAction:2\nI will move left to get closer to the goal."
+  },
+  {
+    "role": "response",
+    "content": "The bomberman is at (3, 5). The goal wallBreak is at (3, 1).\nI should move towards the goal at (3,1), so I should move left.\nAction: 2\nI will move left to get closer to the goal."
+  },
+  {
+    "role": "response",
+    "content": "The bomberman '#' is at (3,5). The goal '$' is at (3,1). I need to move the bomberman to the goal. There are wallBreaks 'b' scattered around, and enemies '@','%','&' that I need to avoid.\n\nAction: 2\nI will move left to try to reach the goal. I expect to move one step to the left."
+  },
+  {
+    "role": "response",
+    "content": "The bomberman '#' is at (3, 5). The goal '$' is at (3, 1).\nThe bomberman is blocked by wallBreak 'b' on the left (3, 4) and right (3, 6).\nThe first action is to go left, I expect to be able to move left and break the wall.\nAction: 2"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "The bomberman is at (3,5). The goal wallBreak is at (3,1).\nThe bomberman should go left to reach the goal.\nAction:2\nI will move left, hoping to eventually reach the goal.\n```Action: 2```"
+  },
+  {
+    "role": "response",
+    "content": "The bomberman '#' is currently at (3, 5). The goal '$' is at (3, 1). I need to move the bomberman towards the goal.\nAction: 2\nI will move left to approach the goal.\n```Action: 2```"
+  },
+  {
+    "role": "response",
+    "content": "The avatar is currently at (3, 5). The goal is at (3, 1). There are breakable walls 'b' around the bomberman '#'. The strategy should be to navigate to the goal while avoiding enemies. I will move LEFT to reach the goal.\nAction: 2"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Okay, I'm playing as the bomberman '#'. My goal is to reach the goal wallBreak '$'.\n\nCurrently, I'm at row=3, col=5. The goal is at row=3, col=1. It's to my left. So I should move left.\n\nAction: 2\nI will move left to approach the goal."
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "The avatar is currently at (3, 5), denoted by '#'. My goal is to reach the goal wallBreak '$' at (3, 1). Currently, there are walls '*' blocking the path to the left. Therefore, I need to break these walls first. I will try moving left to potentially break the wall.\nAction: 2\n``` Action: 2 ```\nI expect the bomberman to move towards the left."
+  },
+  {
+    "role": "response",
+    "content": "Okay, I see the layout. I am bomberman '#', and I need to reach the goal '$'. There are also enemies like bats '@', scorpions '%', and a spider '&'. There are also breakable walls 'b'.\n\nThe goal is at (3,1). I'm currently at (3,5). The shortest path appears to be to go left twice.\n\nAction:2\nI'll move left towards the goal. I expect to get closer to the goal."
+  },
+  {
+    "role": "response",
+    "content": "The bomberman '#' is at (3, 5). The goal '$' is at (3, 1).\nTo reach the goal, I should move left four steps.\nAction: 2\nI'll move left to approach the goal, expecting to get closer to the '$'."
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "The avatar is currently at (3, 5). The goal is at (3, 1). There are walls and wallBreaks around the avatar.\nI should move left to get closer to the goal.\n\nAction:2\nI will move left to approach the goal wallBreak. I expect to move to the left."
+  },
+  {
+    "role": "response",
+    "content": "The avatar '#' is at (3, 5). The goal '$' is at (3, 1). There are wallBreaks 'b' scattered around.\nI need to move the avatar towards the goal.\nFirst move left to (3, 4).\nAction: 2\n```Action: 2```\nI'll move left to try to get closer to the goal."
+  },
+  {
+    "role": "response",
+    "content": "The avatar '#' is at (3,5). The goal '$' is at (3,1). There are wallBreaks 'b' all over the place. I need to move left to reach the goal.\nAction:2\nI will move left, towards the goal. I expect to move closer to the goal."
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "The avatar is currently at (3,5), which is bomberman '#'. The goal '$' is at (3,1). To reach the goal, I need to move left.\nAction:2\nI'll move left to get closer to the goal."
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "The avatar is currently at (3,5), and the goal is at (3,1). The map shows several wallBreak 'b' elements. I need to move the avatar to the left to reach the goal.\nAction:2\nI expect the avatar to move one step to the left.\n```Action: 2```"
+  },
+  {
+    "role": "response",
+    "content": "The avatar is at (3, 5). The goal is at (3, 1). There is a wall at (3, 2).\nThere are breakable walls around bomberman.\nI should move left to reach the goal.\nAction: 2\nI will move left to go to the goal."
+  },
+  {
+    "role": "response",
+    "content": "The avatar is currently at position (3, 5). The goal is at (3, 1). There are wall breaks around the avatar, and I want to move towards the goal.\n\nAction:2\nI'll move left to get closer to the goal."
+  },
+  {
+    "role": "response",
+    "content": "The bomberman '#' is at (3, 5). The goal '$' is at (3, 1). The surrounding area has wallBreak 'b', wall '*' and empty spaces '.'. To reach the goal, I need to go left.\nAction: 2\nI will move left to approach the goal."
+  },
+  {
+    "role": "response",
+    "content": "The avatar is currently at (3,5). The goal is at (3,1). There are breakable walls 'b' around. To reach the goal, the avatar needs to move to the left.\nAction: 2\nI expect the avatar to move one step to the left.\n```Action: 2```"
+  },
+  {
+    "role": "response",
+    "content": "The avatar is at (3, 5). The goal is at (3, 1). There are breakable walls around. I need to move left to reach the goal.\nAction: 2\nI will move left to get closer to the goal."
+  },
+  {
+    "role": "response",
+    "content": "The bomberman is at (3, 5). The goal wallBreak is at (3, 1).\nAction: 2\nI will move left to get closer to the goal. I expect to move to the left."
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "The avatar is currently at (3,5). The goal is at (3,1). There are wallBreak 'b' scattered around the map. I should try to move towards the goal.\nAction: 2\nI will move left to get closer to the goal."
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "The avatar is at (3, 5). The goal is at (3, 1). There's a wallBreak to the left of the goal.\nAction: 2\nI will move left to get closer to the goal.\n``` Action:2 ```"
+  },
+  {
+    "role": "response",
+    "content": "The avatar is currently at (3, 5), represented by '#'. There's a goal wallBreak '$' at (3, 1).\nI need to navigate the avatar to the goal, avoiding the walls '*' and enemies.\nI will first move left to go towards the goal.\n\nAction: 2\n```\nI expect the avatar to move one step to the left.\n```"
+  },
+  {
+    "role": "response",
+    "content": "Okay, I am at position (3, 5) which is marked with '#'. The goal is at (3, 1) marked with '$'. There are wallBreak 'b' around me. I can try to break the wall to get to the goal. I will try to move left first.\nAction: 2"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Okay, I am at row 3, col 5. My goal is at row 3, col 1. To get there, I need to move left. There is a wall to my left at row 3 col 4. I need to break the wall first, I can go down or up. I will try to go up first.\nAction: 5\n``` Feedback: Move up to try to break the wall at row 3, col 4. I expect to move from (3, 5) to (2, 5) if the up action allows the avatar to move. ```"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "The bomberman '#' is at row=3, col=5. The goal wallBreak '$' is at row=3, col=1.\nThe strategy is to move the bomberman towards the goal.\nI need to move left to reach the goal.\nAction: 2\nI will move left, expecting to get closer to the goal."
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Okay, I'm playing as the bomberman '#'. My goal is to reach the goal wallBreak '$'. Currently, I'm at row=3, col=5. The goal '$' is at row=3, col=1. I need to move left.\n\nAction:2\nI will move left, hoping to get closer to the goal."
+  },
+  {
+    "role": "response",
+    "content": "The avatar is currently at (3,5). The goal is at (3,1). There are breakable walls around the bomberman. I should try to move left.\nAction:2\nI will move left to go towards the goal."
+  },
+  {
+    "role": "response",
+    "content": "The avatar is currently at (3,5). The goal is at (3,1). The avatar needs to move left to reach the goal.\n\nAction:2\nI will move left, hoping to get closer to the goal."
+  },
+  {
+    "role": "response",
+    "content": "The avatar is currently at (3, 5), represented by '#'. The goal wallBreak is at (3, 1), represented by '$'.\nTo reach the goal, the avatar needs to move left.\nAction: 2\nI will move left to get closer to the goal.\n``` Action: 2 ```"
+  },
+  {
+    "role": "response",
+    "content": "The avatar is at row=3, col=5.\nThe goal is at row=3, col=1.\nI need to move left to reach the goal.\nAction:2\nI will move left to approach the goal."
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "The avatar is currently at (3, 5). The goal is at (3, 1). There are breakable walls around the avatar.\nThe best strategy is to move left to the goal.\nAction: 2\nI will move left to approach the goal."
+  },
+  {
+    "role": "response",
+    "content": "The avatar is at position (3, 5). The goal is at (3, 1). There are breakable walls around, indicated by 'b'. I need to move left to reach the goal.\nAction: 2\nI will move left to approach the goal.```Action: 2```"
+  },
+  {
+    "role": "response",
+    "content": "The avatar is currently at (3, 5). The goal is at (3, 1). I need to move the avatar to the left to reach the goal.\nAction: 2\nI will move left to approach the goal.\n```Action: 2```"
+  },
+  {
+    "role": "response",
+    "content": "The avatar is currently at (3,5). My goal is to reach the goal wallBreak '$' at (3,1). To get there, I need to move left.\nAction:2\nI will move left to get closer to the goal wallBreak."
+  },
+  {
+    "role": "response",
+    "content": "The avatar is currently at (3,5). The goal is at (3,1). There are wallBreak 'b' entities blocking the path.\nI need to move left to get to the goal.\n\nAction:2\nI will move left to get closer to the goal."
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "The avatar is currently at (3,5). The goal is at (3,1). There are breakable walls all around the avatar.\nI will move left to try to get to the goal.\nAction: 2\nI expect the avatar to move to the left, closer to the goal.``` Action: 2 ```"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "The bomberman '#' is at (3,5). There's a goal '$' at (3,1) and some breakable walls 'b' around. I should try to clear the path to the goal.\n\nAction:2\nI will move left, hoping to get closer to the goal."
+  },
+  {
+    "role": "response",
+    "content": "Okay, I'm playing as the BomberMan '#'. My current location is row 3, column 5. The goal 'S' is at row 3, column 1. There are wallBreaks 'b' nearby. I will try to move to the left to reach the goal.\nAction: 2"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "The avatar is currently at (3, 5), represented by '#'. The goal is located at (3, 1), represented by '$'. I will move to the left to approach the goal.\nAction: 2\nI will move left to get closer to the goal."
+  },
+  {
+    "role": "response",
+    "content": "The avatar is currently at (3,5), and the goal is at (3,1). I need to move the avatar to the left.\nAction:2\nI will move left to get closer to the goal, which is on the left.\n```Action:2```"
+  },
+  {
+    "role": "response",
+    "content": "The avatar is '#', located at (3, 5). The goal '$' is at (3, 1). To reach the goal, I need to move left. There are 'wallBreak' 'b' surrounding the goal.\nAction: 2\nI will move left to get closer to the goal."
+  },
+  {
+    "role": "response",
+    "content": "The avatar is currently at (3,5). The goal is at (3,1). There is a wall at (3,2). So I need to move left towards the goal.\nAction:2\nI will move left to approach the goal."
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "The avatar is currently at (3, 5), represented by '#'. The goal wallBreak is at (3, 1), represented by '$'. I need to move the avatar to the goal.\n\nFirst, I'll try moving LEFT to see if the avatar moves.\nAction:2\nI expect the avatar to move to the left."
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  },
+  {
+    "role": "response",
+    "content": "Error: 429"
+  }
+]

@@ -89,7 +89,7 @@ class PortkeyClient(LLMClientBase):
         # payload = {k: v for k, v in payload.items() if v is not None}
 
 
-        for attempt in range(3): # Reduced retries for faster feedback during dev
+        for attempt in range(10): # Reduced retries for faster feedback during dev
             try:
                 # Ensure base_url is just the gateway, and /v1/chat/completions is appended if not already
                 # Constructor now handles this.
@@ -106,9 +106,10 @@ class PortkeyClient(LLMClientBase):
             except httpx.HTTPStatusError as e:
                 error_message = f"[PortkeyClient] API Error: {e.response.status_code} - {e.response.text}"
                 print(error_message)
-                if e.response.status_code in [502, 503, 504] and attempt < 2: # Retry on server errors
-                    print(f"Retrying after 5 seconds...")
-                    time.sleep(5)
+                if (e.response.status_code in [502, 503, 504] or (400 <= e.response.status_code < 500)) and attempt < 2: # Retry on server errors and 4xx errors
+                    wait_time = 2 ** attempt
+                    print(f"Retrying after {wait_time} seconds...")
+                    time.sleep(wait_time)
                     continue
                 else: # Non-retryable HTTP error or max retries reached
                     return f"Error: {e.response.status_code}" 
