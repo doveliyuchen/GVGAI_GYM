@@ -34,9 +34,13 @@ def generate_reward_report(reflection_manager, output_dir, winner=None):
 
 def save_step_metrics_json(path, step_flags, positions, key="meaningful", winner=None):
     """Save boolean list and avatar positions as step-wise metrics json."""
+    if len(step_flags) == 0:
+        step_ratio = 0.0
+    else:
+        step_ratio = sum(step_flags) / len(step_flags)
     metrics = {
         f"{key}_steps": step_flags,
-        f"{key}_step_ratio": sum(step_flags) / len(step_flags),
+        f"{key}_step_ratio": step_ratio,
         "avatar_positions": [[pos] for pos in positions] # Transform into n*1 shape
     }
     if winner is not None:

@@ -56,7 +56,7 @@ class DeepseekClient(LLMClientBase):
         # Build payload, only include non-None values
         payload = {
             "model": self.default_model,
-            "messages": self.messages,
+            "messages": self.messages
         }
         
         # Only add optional parameters if they are not None
@@ -81,7 +81,16 @@ class DeepseekClient(LLMClientBase):
                     timeout=300
                 )
                 response.raise_for_status()
-                return response.json()["choices"][0]["message"]["content"].strip()
+                try:
+                    content = response.json()["choices"][0]["message"]["content"].strip()
+                    if not content:
+                        print(f"[DeepseekClient] Empty content in response: {response.json()}")
+                        print(f"[DeepseekClient] Payload sent: {payload}")
+                    return content
+                except Exception as parse_e:
+                    print(f"[DeepseekClient] Failed to parse response: {response.text}")
+                    print(f"[DeepseekClient] Payload sent: {payload}")
+                    return ""
 
             except requests.exceptions.HTTPError as e:
                 if response.status_code in [502, 503, 504] and attempt < 2:

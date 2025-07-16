@@ -42,9 +42,9 @@ def check_run_dir_is_taken(base_dir, model_name_full, env_name_full, run_id):
     temp_file_path = os.path.join(run_dir, ".running_temp")
     
     # A run is "taken" if:
-    # 1. The benchmark_analysis.json file exists (indicating successful completion)
+    # 1. The benchmark_analysis.json directory exists (indicating successful completion)
     # 2. The .running_temp file exists (indicating another worker is currently running this task)
-    return os.path.isfile(analysis_file_path) or os.path.isfile(temp_file_path)
+    return os.path.exists(analysis_file_path) or os.path.isfile(temp_file_path)
 
 def find_next_available_run_id(base_dir, model_name_full, env_name_full, initial_run_id):
     """Find the next available run ID where no successful completion exists (no benchmark_analysis.json)."""
@@ -381,6 +381,10 @@ def generate_tasks_prioritized(game_list_to_process, models, modes, num_runs, ba
                         if model_name_full in portkey_virtual_keys_loaded:
                             task_args["portkey_virtual_key"] = portkey_virtual_keys_loaded[model_name_full]
                         
+                        # Only schedule the run if it is missing (not completed and not running)
+                        if check_run_dir_is_taken(base_output_dir, model_name_full, env_name_full, current_run_num):
+                            print(f"Run {current_run_num} already exists for {env_name_full}, {model_name_full}, {mode}. Skipping.")
+                            continue
                         tasks.append(task_args)
     
     return tasks

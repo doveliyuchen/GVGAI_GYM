@@ -33,39 +33,69 @@ def load_run_data(run_dir):
         return None
     
     try:
+        import traceback
         with open(step_metrics_path, 'r') as f:
             data = json.load(f)
+        print(f"DEBUG: loaded {step_metrics_path}, keys={list(data.keys())}", flush=True)
         
         # 计算基本指标
         meaningful_steps = data.get('meaningful_steps', [])
+        if meaningful_steps is None:
+            meaningful_steps = []
         avatar_positions = data.get('avatar_positions', [])
-        
-        total_steps = len(meaningful_steps)
-        meaningful_count = sum(meaningful_steps) if meaningful_steps else 0
-        meaningful_ratio = meaningful_count / total_steps if total_steps > 0 else 0
-        
+        if avatar_positions is None:
+            avatar_positions = []
+        winner = data.get('winner', None)
+
+        # 优先 meaningful_steps 字段，其次 meaningful_step_ratio
+        if isinstance(meaningful_steps, list) and len(meaningful_steps) > 0:
+            total_steps = len(meaningful_steps)
+            meaningful_count = sum(meaningful_steps)
+            meaningful_ratio = meaningful_count / total_steps if total_steps > 0 else 0
+        elif "meaningful_step_ratio" in data:
+            meaningful_ratio = data["meaningful_step_ratio"]
+            total_steps = None
+            meaningful_count = None
+        else:
+            total_steps = None
+            meaningful_count = None
+            meaningful_ratio = 0
+
         # 计算移动距离
-        total_distance = 0
-        if len(avatar_positions) > 1:
+        if avatar_positions and isinstance(avatar_positions, list) and len(avatar_positions) > 1:
+            total_distance = 0
             for i in range(1, len(avatar_positions)):
-                if avatar_positions[i] and avatar_positions[i-1]:
-                    pos1 = avatar_positions[i-1][0] if avatar_positions[i-1] else [0, 0]
-                    pos2 = avatar_positions[i][0] if avatar_positions[i] else [0, 0]
-                    distance = abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1])  # 曼哈顿距离
+                prev = avatar_positions[i-1]
+                curr = avatar_positions[i]
+                # 检查 prev 和 curr 是否为有效二维坐标
+                if (
+                    isinstance(prev, list) and len(prev) == 1 and isinstance(prev[0], list) and len(prev[0]) == 2 and
+                    isinstance(curr, list) and len(curr) == 1 and isinstance(curr[0], list) and len(curr[0]) == 2
+                ):
+                    pos1 = prev[0]
+                    pos2 = curr[0]
+                    distance = abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1])
                     total_distance += distance
-        
+                else:
+                    continue
+        else:
+            total_distance = 0
+
         return {
             'total_steps': total_steps,
             'meaningful_steps': meaningful_count,
             'meaningful_ratio': meaningful_ratio,
             'total_distance': total_distance,
-            'avg_distance_per_step': total_distance / total_steps if total_steps > 0 else 0
+            'avg_distance_per_step': total_distance / total_steps if total_steps > 0 else 0,
+            'winner': winner
         }
     except Exception as e:
+        import traceback
         print(f"Error loading {step_metrics_path}: {e}")
+        traceback.print_exc()
         return None
 
-def load_csv_data(run_dir):
+def load_csv_data(run_dir, winner=None):
     """加载CSV数据获取奖励信息"""
     csv_path = os.path.join(run_dir, "benchmark_analysis.json", "step_metrics.csv")
     
@@ -79,15 +109,19 @@ def load_csv_data(run_dir):
         reward_steps = len(df[df['reward'] > 0])
         max_reward = df['reward'].max()
         
-        # 检查游戏是否获胜 (通常最后一步有高奖励表示获胜)
-        final_reward = df['reward'].iloc[-1] if len(df) > 0 else 0
-        won = final_reward > 0 or total_reward > 10  # 简单的获胜判断逻辑
+        # 优先用 winner 字段判定胜负
+        if winner is not None:
+            won = (winner == "PLAYER_WINS")
+        else:
+            # 检查游戏是否获胜 (通常最后一步有高奖励表示获胜)
+            final_reward = df['reward'].iloc[-1] if len(df) > 0 else 0
+            won = final_reward > 0 or total_reward > 10  # 简单的获胜判断逻辑
         
         return {
             'total_reward': total_reward,
             'reward_steps': reward_steps,
             'max_reward': max_reward,
-            'final_reward': final_reward,
+            'final_reward': df['reward'].iloc[-1] if len(df) > 0 else 0,
             'won': won
         }
     except Exception as e:
@@ -95,64 +129,63 @@ def load_csv_data(run_dir):
         return None
 
 def scan_results_directory(base_dir):
-    """扫描结果目录并收集所有数据"""
+    """递归扫描所有 run_x/benchmark_analysis.json/step_metrics.json 文件，自动推断模型/游戏/关卡"""
     results = []
     base_path = Path(base_dir)
-    
+
     if not base_path.exists():
         print(f"Results directory {base_dir} does not exist!")
         return results
-    
+
     print(f"Scanning results in {base_dir}...")
-    
-    # 遍历模型目录
-    for model_dir in base_path.iterdir():
-        if not model_dir.is_dir():
-            continue
-            
-        model_name = model_dir.name
-        print(f"Processing model: {model_name}")
-        
-        # 遍历游戏目录
-        for game_dir in model_dir.iterdir():
-            if not game_dir.is_dir():
-                continue
-                
-            game_name_full = game_dir.name
-            game_name, level = extract_game_info(f"gvgai-{game_name_full}-v0")
-            
-            # 遍历运行目录
-            for run_dir in game_dir.iterdir():
-                if not run_dir.is_dir() or not run_dir.name.startswith('run_'):
-                    continue
-                    
-                run_id = run_dir.name.replace('run_', '')
-                
-                # 加载数据
-                json_data = load_run_data(run_dir)
-                csv_data = load_csv_data(run_dir)
-                
-                if json_data is not None:
-                    result = {
-                        'model': model_name,
-                        'game': game_name,
-                        'level': level,
-                        'run_id': int(run_id),
-                        'game_level': f"{game_name}-lvl{level}",
-                        **json_data
-                    }
-                    
-                    if csv_data is not None:
-                        result.update(csv_data)
-                    
-                    results.append(result)
-    
+
+    # 递归查找所有 run_x/benchmark_analysis.json/step_metrics.json
+    for step_json in base_path.rglob("run_*/benchmark_analysis.json/step_metrics.json"):
+        run_dir = step_json.parent.parent
+        # 判断是否有模型层（base_dir/模型/游戏-关卡/run_x/）
+        rel_parts = run_dir.relative_to(base_path).parts
+        if len(rel_parts) >= 3:
+            model_name = rel_parts[0]
+            game_level_dir = rel_parts[1]
+        else:
+            model_name = "default"
+            game_level_dir = rel_parts[0]
+        run_id = run_dir.name.replace('run_', '')
+        game_name, level = extract_game_info(f"gvgai-{game_level_dir}-v0")
+        json_data = load_run_data(run_dir)
+        if json_data is not None:
+            winner = json_data.get('winner', None)
+            csv_data = load_csv_data(run_dir, winner=winner)
+            print(f"DEBUG: {run_dir} model={model_name} game_level={game_level_dir} json_data={json_data} csv_data={csv_data}")
+            result = {
+                'model': model_name,
+                'game': game_name,
+                'level': level,
+                'run_id': int(run_id),
+                'game_level': f"{game_name}-lvl{level}",
+                **json_data
+            }
+            if csv_data is not None:
+                result.update(csv_data)
+            results.append(result)
+        else:
+            print(f"DEBUG: {run_dir} model={model_name} game_level={game_level_dir} json_data=None (skipped)")
+            if csv_data is not None:
+                result.update(csv_data)
+            results.append(result)
+
     print(f"Collected {len(results)} results")
     return results
 
 def create_heatmaps(df, output_dir="heatmaps"):
     """创建各种热力图"""
     os.makedirs(output_dir, exist_ok=True)
+
+    # 保证 normalized_reward 字段存在
+    if 'total_reward' in df.columns and 'normalized_reward' not in df.columns:
+        df['normalized_reward'] = df.groupby('game_level')['total_reward'].transform(
+            lambda x: (x - x.min()) / (x.max() - x.min() + 1e-8)
+        )
     
     # 设置图形样式
     plt.style.use('default')
@@ -161,9 +194,10 @@ def create_heatmaps(df, output_dir="heatmaps"):
     # 1. 有意义步数比例热力图
     print("Creating meaningful ratio heatmap...")
     pivot_meaningful = df.groupby(['model', 'game_level'])['meaningful_ratio'].mean().unstack(fill_value=0)
+    annot_meaningful = pivot_meaningful.applymap(lambda x: f"{int(x)}" if float(x).is_integer() else f"{x:.2f}")
     
     plt.figure(figsize=(16, 8))
-    sns.heatmap(pivot_meaningful, annot=True, fmt='.3f', cmap='RdYlGn', 
+    sns.heatmap(pivot_meaningful, annot=annot_meaningful, fmt='', cmap='RdYlGn', 
                 cbar_kws={'label': 'Meaningful Step Ratio'})
     plt.title('Average Meaningful Step Ratio by Model and Game')
     plt.xlabel('Game-Level')
@@ -177,9 +211,10 @@ def create_heatmaps(df, output_dir="heatmaps"):
     if 'total_reward' in df.columns:
         print("Creating total reward heatmap...")
         pivot_reward = df.groupby(['model', 'game_level'])['total_reward'].mean().unstack(fill_value=0)
+        annot_reward = pivot_reward.applymap(lambda x: f"{int(x)}" if float(x).is_integer() else f"{x:.2f}")
         
         plt.figure(figsize=(16, 8))
-        sns.heatmap(pivot_reward, annot=True, fmt='.1f', cmap='RdYlGn', 
+        sns.heatmap(pivot_reward, annot=annot_reward, fmt='', cmap='RdYlGn', 
                     cbar_kws={'label': 'Average Total Reward'})
         plt.title('Average Total Reward by Model and Game')
         plt.xlabel('Game-Level')
@@ -188,14 +223,32 @@ def create_heatmaps(df, output_dir="heatmaps"):
         plt.tight_layout()
         plt.savefig(f"{output_dir}/total_reward_heatmap.png", dpi=300, bbox_inches='tight')
         plt.close()
+
+    # 2b. 归一化奖励热力图
+    if 'normalized_reward' in df.columns:
+        print("Creating normalized reward heatmap...")
+        pivot_norm_reward = df.groupby(['model', 'game_level'])['normalized_reward'].mean().unstack(fill_value=0)
+        annot_norm_reward = pivot_norm_reward.applymap(lambda x: f"{int(x)}" if float(x).is_integer() else f"{x:.2f}")
+        
+        plt.figure(figsize=(16, 8))
+        sns.heatmap(pivot_norm_reward, annot=annot_norm_reward, fmt='', cmap='YlGnBu', 
+                    vmin=0, vmax=1, cbar_kws={'label': 'Average Normalized Reward'})
+        plt.title('Average Normalized Reward by Model and Game')
+        plt.xlabel('Game-Level')
+        plt.ylabel('Model')
+        plt.xticks(rotation=45, ha='right')
+        plt.tight_layout()
+        plt.savefig(f"{output_dir}/normalized_reward_heatmap.png", dpi=300, bbox_inches='tight')
+        plt.close()
     
     # 3. 获胜率热力图
     if 'won' in df.columns:
         print("Creating win rate heatmap...")
         pivot_winrate = df.groupby(['model', 'game_level'])['won'].mean().unstack(fill_value=0)
+        annot_winrate = pivot_winrate.applymap(lambda x: f"{int(x)}" if float(x).is_integer() else f"{x:.2f}")
         
         plt.figure(figsize=(16, 8))
-        sns.heatmap(pivot_winrate, annot=True, fmt='.3f', cmap='RdYlGn', 
+        sns.heatmap(pivot_winrate, annot=annot_winrate, fmt='', cmap='RdYlGn', 
                     cbar_kws={'label': 'Win Rate'})
         plt.title('Win Rate by Model and Game')
         plt.xlabel('Game-Level')
@@ -208,9 +261,10 @@ def create_heatmaps(df, output_dir="heatmaps"):
     # 4. 平均步数热力图
     print("Creating average steps heatmap...")
     pivot_steps = df.groupby(['model', 'game_level'])['total_steps'].mean().unstack(fill_value=0)
+    annot_steps = pivot_steps.applymap(lambda x: f"{int(x)}" if float(x).is_integer() else f"{x:.2f}")
     
     plt.figure(figsize=(16, 8))
-    sns.heatmap(pivot_steps, annot=True, fmt='.0f', cmap='RdYlBu_r', 
+    sns.heatmap(pivot_steps, annot=annot_steps, fmt='', cmap='RdYlBu_r', 
                 cbar_kws={'label': 'Average Total Steps'})
     plt.title('Average Total Steps by Model and Game')
     plt.xlabel('Game-Level')
@@ -225,7 +279,10 @@ def create_heatmaps(df, output_dir="heatmaps"):
     
     # 选择关键指标进行标准化
     metrics = ['meaningful_ratio', 'total_steps']
-    if 'total_reward' in df.columns:
+    # 优先用 normalized_reward 替代 total_reward
+    if 'normalized_reward' in df.columns:
+        metrics.append('normalized_reward')
+    elif 'total_reward' in df.columns:
         metrics.append('total_reward')
     if 'won' in df.columns:
         metrics.append('won')
@@ -238,7 +295,10 @@ def create_heatmaps(df, output_dir="heatmaps"):
     for metric in metrics:
         if metric == 'total_steps':
             # 步数越少越好，所以反转
-            normalized_data[metric] = 1 - (agg_data[metric] - agg_data[metric].min()) / (agg_data[metric].max() - agg_data[metric].min() + 1e-8)
+            normalized_data[metric] = 1 - (agg_data[metric] - agg_data[metric].min()) / (agg_data[metric] - agg_data[metric].min() + 1e-8)
+        elif metric == 'normalized_reward':
+            # normalized_reward 已经是0-1，无需再归一化
+            normalized_data[metric] = agg_data[metric]
         else:
             # 其他指标越高越好
             normalized_data[metric] = (agg_data[metric] - agg_data[metric].min()) / (agg_data[metric].max() - agg_data[metric].min() + 1e-8)
@@ -246,9 +306,10 @@ def create_heatmaps(df, output_dir="heatmaps"):
     # 计算综合得分
     comprehensive_score = normalized_data.mean(axis=1)
     pivot_comprehensive = comprehensive_score.unstack(fill_value=0)
+    annot_comprehensive = pivot_comprehensive.applymap(lambda x: f"{int(x)}" if float(x).is_integer() else f"{x:.2f}")
     
     plt.figure(figsize=(16, 8))
-    sns.heatmap(pivot_comprehensive, annot=True, fmt='.3f', cmap='RdYlGn', 
+    sns.heatmap(pivot_comprehensive, annot=annot_comprehensive, fmt='', cmap='RdYlGn', 
                 cbar_kws={'label': 'Comprehensive Performance Score'})
     plt.title('Comprehensive Performance Score by Model and Game\n(Normalized combination of meaningful ratio, efficiency, reward, and win rate)')
     plt.xlabel('Game-Level')
@@ -318,10 +379,24 @@ def main():
     if args.games:
         df = df[df['game'].isin(args.games)]
         print(f"Filtered to games: {args.games}")
-    
+
+    # 模型名友好映射
+    model_map = {
+        "portkey": "chatgpt o3-mini (reasoner model)",
+        "portkey-4o-mini": "chatgpt 4o-mini",
+        "gemini": "gemini"
+    }
+    df['model'] = df['model'].map(lambda x: model_map.get(x, x))
+
     if df.empty:
         print("No data remaining after filtering!")
         return
+
+    # 按 game_level 归一化 total_reward，跨 model
+    if 'total_reward' in df.columns:
+        df['normalized_reward'] = df.groupby('game_level')['total_reward'].transform(
+            lambda x: (x - x.min()) / (x.max() - x.min() + 1e-8)
+        )
     
     print(f"Analyzing {len(df)} results from {df['model'].nunique()} models and {df['game_level'].nunique()} game-levels")
     
