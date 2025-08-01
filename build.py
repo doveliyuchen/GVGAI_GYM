@@ -36,7 +36,8 @@ def main(dir):
 			#Build Java files
 			src_path = os.path.join(dir, "src")
 			source = get_src(src_path)
-			subprocess.run(["javac", "-d", path] + source, check=True)
+			# Add -Xlint flags to get detailed warnings
+			subprocess.run(["javac", "-d", path, "-Xlint:deprecation", "-Xlint:unchecked"] + source, check=True)
 
 			#Save hash of build in directory
 			hash = check_build.dirHash(src_path)

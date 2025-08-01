@@ -1,6 +1,0 @@
-[
-  {
-    "role": "response",
-    "content": "Given the current game state, your avatar is at position `(1, 1)` facing east represented by `@`. Your goal is to reach the goal sprite denoted by `g`. The nearest goal sprite is located at `(14, 7)`.\n\nIn analyzing the surrounding area:\n- To the east `(1, 2)` and `(1, 3)` are both clear with `.`.\n- Continuing east to `(1, 4)` through `(1, 6)` remains clear, allowing movement without hazards.\n- You can continue to maneuver south and further down since the row below has a lot of `e` (water) which you should avoid.\n\nSince the last position of your avatar did not change, and the action that I will choose now will be to move in the eastern direction to `(1, 2)`.\n\nI will execute the following action:\n\n``` Action:2 ```\nThis action should move the avatar east to a position where it can further navigate without immediate hazards, maintaining the strategy of caution and planning."
-  }
-]

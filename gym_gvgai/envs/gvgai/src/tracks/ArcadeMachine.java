@@ -497,6 +497,11 @@ public class ArcadeMachine {
 			scores[id].add(score[id]);
 			victories[id].add(toPlay.getWinner(id) == Types.WINNER.PLAYER_WINS ? 1 : 0);
 		    }
+		
+		// --- ADDED FOR LOGGING ---
+		System.out.println("Run finished. Game: " + game_file + ", Level: " + level_file + ", Run: " + (i+1) + "/" + level_times + 
+		                   ", Winner: " + toPlay.getWinner(0) + ", Score: " + score[0]);
+		// --- END OF LOGGING ADDITION ---
 
 		// reset the game.
 		toPlay.reset();

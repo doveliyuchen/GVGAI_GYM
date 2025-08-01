@@ -26,7 +26,7 @@
       "model": "deepseek-reasoner",
       "parameters": {
         "temperature": 0.9,
-        "max_tokens": 8000
+        "max_tokens": 18000
       }
     },
     "qwen":{
@@ -43,7 +43,7 @@
       "virtual_key_env_var": "PORTKEY_VIRTUAL_KEY_O3_MINI", 
       "actual_model_name": "o3-mini", 
       "parameters": {
-        "max_context_tokens": 8000,
+        "max_context_tokens": 100000,
         "max_tokens": 2000
       }
     },
@@ -54,18 +54,49 @@
       "virtual_key_env_var": "PORTKEY_VIRTUAL_KEY_4O_MINI", 
       "actual_model_name": "gpt-4o-mini", 
       "parameters": {
-        "max_context_tokens": 8000,
+        "max_context_tokens": 100000,
         "max_tokens": 2048 
       }
     },
-    "gemini": {
+    "gemini-pro": {
+      "client_type": "portkey",
+      "portkey_base_url": "https://ai-gateway.apps.cloud.rt.nyu.edu",
+      "portkey_api_key_env_var": "PORTKEY_API_KEY",
+      "virtual_key_env_var": "PORTKEY_VIRTUAL_KEY_VERTEX_AI", 
+      "actual_model_name": "gemini-2.5-pro", 
+      "parameters": {
+        "max_context_tokens": 100000,
+        "max_tokens": 2048
+      }
+    },
+    "claude-4": {
+      "client_type": "claude",
+      "model": "claude-sonnet-4-20250514",
+      "api_key": "CLAUDE_API_KEY",
+      "parameters": {
+        "max_context_tokens": 100000,
+        "max_tokens": 1024
+      }
+    },
+    "portkey-claude": {
+      "client_type": "portkey",
+      "portkey_base_url": "https://ai-gateway.apps.cloud.rt.nyu.edu",
+      "portkey_api_key_env_var": "PORTKEY_API_KEY",
+      "virtual_key_env_var": "PORTKEY_VIRTUAL_KEY_VERTEX_AI",
+      "actual_model_name": "claude-sonnet-3-7@20250514",
+      "parameters": {
+        "max_context_tokens": 100000,
+        "max_tokens": 2048
+      }
+    },
+        "gemini": {
       "client_type": "portkey",
       "portkey_base_url": "https://ai-gateway.apps.cloud.rt.nyu.edu",
       "portkey_api_key_env_var": "PORTKEY_API_KEY",
       "virtual_key_env_var": "PORTKEY_VIRTUAL_KEY_VERTEX_AI", 
       "actual_model_name": "gemini-2.0-flash-exp", 
       "parameters": {
-        "max_context_tokens": 7000,
+        "max_context_tokens": 100000,
         "max_tokens": 2048
       }
     }

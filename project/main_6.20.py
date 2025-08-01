@@ -481,7 +481,7 @@ def main():
             for game_path in sorted(all_games_dir.iterdir()):
                 if game_path.is_dir(): # Each game is a directory like 'aliens_v0'
                     game_name = game_path.name
-                    if "testgame" not in game_name.lower():
+                    if "testgame" not in game_name.lower() and "ghostbuster" not in game_name.lower():
                         game_list_to_process.append(game_name)
             if game_list_to_process:
                 print(f"Found {len(game_list_to_process)} games to process (excluding testgames): {game_list_to_process}")
