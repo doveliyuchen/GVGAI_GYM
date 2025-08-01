@@ -33,7 +33,7 @@ Follow the step-by-step [guidelines](https://github.com/SUSTechGameAI/GVGAI_GYM/
 
 - **Anaconda**: Version published after 2019.10 is recommended.
 - **Java**: JDK 9 is recommended.
-- **Python**: Python 3 (3.6 or 3.7 recommended). **Python 2 is not supported.**
+- **Python**: Python 3 (3.7 or 3.8 recommended). **Python 2 is not supported.**
 
 ---
 
