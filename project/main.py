@@ -33,15 +33,15 @@ def get_model_name_simple(model_name_full):
     """Returns the model name, handling 'portkey-' prefix for directory naming."""
     return model_name_full
 
-def get_run_dir_path(base_dir, model_name_full, env_name_full, run_id):
-    """Get the directory path for a specific run."""
+def get_run_dir_path(base_dir, model_name_full, env_name_full, mode, run_id):
+    """Get the directory path for a specific run, including the mode."""
     model_simple = get_model_name_simple(model_name_full)
     game_simple = get_game_name_simple(env_name_full)
-    return os.path.join(base_dir, model_simple, game_simple, f"run_{run_id}")
+    return os.path.join(base_dir, model_simple, game_simple, mode, f"run_{run_id}")
 
-def check_run_dir_is_taken(base_dir, model_name_full, env_name_full, run_id):
+def check_run_dir_is_taken(base_dir, model_name_full, env_name_full, mode, run_id):
     """Check if the specified run directory is taken (has a completed benchmark_analysis.json or is currently running)."""
-    run_dir = get_run_dir_path(base_dir, model_name_full, env_name_full, run_id)
+    run_dir = get_run_dir_path(base_dir, model_name_full, env_name_full, mode, run_id)
     analysis_file_path = os.path.join(run_dir, "benchmark_analysis.json")
     temp_file_path = os.path.join(run_dir, ".running_temp")
     
@@ -50,11 +50,11 @@ def check_run_dir_is_taken(base_dir, model_name_full, env_name_full, run_id):
     # 2. The .running_temp file exists (indicating another worker is currently running this task)
     return os.path.exists(analysis_file_path) or os.path.isfile(temp_file_path)
 
-def find_next_available_run_id(base_dir, model_name_full, env_name_full, initial_run_id):
+def find_next_available_run_id(base_dir, model_name_full, env_name_full, mode, initial_run_id):
     """Find the next available run ID where no successful completion exists (no benchmark_analysis.json)."""
     run_id = initial_run_id
-    while check_run_dir_is_taken(base_dir, model_name_full, env_name_full, run_id):
-        print(f"Run_id {run_id} (Game: {env_name_full}, Model: {model_name_full}) already has successful completion (benchmark_analysis.json exists). Trying next run ID.")
+    while check_run_dir_is_taken(base_dir, model_name_full, env_name_full, mode, run_id):
+        print(f"Run_id {run_id} (Game: {env_name_full}, Model: {model_name_full}, Mode: {mode}) already has successful completion. Trying next run ID.")
         run_id += 1
     return run_id
 
@@ -107,14 +107,14 @@ def run_single_game_task(env_name_full: str, mode: str, model_name_full: str, re
         print(f"Force rerun enabled. Using run_id: {actual_run_id_to_use} for {env_name_full}, {model_name_full}, {mode}.")
     else:
         actual_run_id_to_use = find_next_available_run_id(
-            base_output_dir, model_name_full, env_name_full, requested_run_id
+            base_output_dir, model_name_full, env_name_full, mode, requested_run_id
         )
         if actual_run_id_to_use != requested_run_id:
             print(f"Requested run_id {requested_run_id} was taken. Using next available run_id: {actual_run_id_to_use}")
         else:
             print(f"Using requested run_id: {actual_run_id_to_use}")
 
-    run_dir = get_run_dir_path(base_output_dir, model_name_full, env_name_full, actual_run_id_to_use)
+    run_dir = get_run_dir_path(base_output_dir, model_name_full, env_name_full, mode, actual_run_id_to_use)
     temp_file_path = os.path.join(run_dir, ".running_temp")
     
     # Create directory and temporary file to mark this task as running
@@ -461,7 +461,7 @@ def generate_tasks_prioritized(game_list_to_process, models, modes, num_runs, ba
                         if model_name_full in portkey_virtual_keys_loaded:
                             task_args["portkey_virtual_key"] = portkey_virtual_keys_loaded[model_name_full]
                         
-                        if not force_rerun and check_run_dir_is_taken(base_output_dir, model_name_full, env_name_full, current_run_num):
+                        if not force_rerun and check_run_dir_is_taken(base_output_dir, model_name_full, env_name_full, mode, current_run_num):
                             print(f"Run {current_run_num} already exists for {env_name_full}, {model_name_full}, {mode}. Skipping.")
                             continue
                         tasks.append(task_args)

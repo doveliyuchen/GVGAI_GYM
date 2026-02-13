@@ -188,7 +188,7 @@ def build_dynamic_prompt(
 
     if current_ascii and config.get("include_current_state", True):
         expanded_map_prompt = ''
-        current_ascii_prompt = ''
+        current_ascii_prompt = current_ascii
         if rotate:
             rotated = rotate_ascii_left(current_ascii)
             current_ascii_prompt = (
@@ -200,7 +200,7 @@ def build_dynamic_prompt(
         if expanded:
             expanded_map_lines = ascii_to_position_mapping(current_ascii, sprite_mapping)
             expanded_map_prompt = (
-                "=== Map in Natural language ===\n"
+                "\n\n=== Map in Natural language ===\n"
                 "Each line shows entity at (row, col).\n"
                 "In rotated version, row emphasizes vertical (up-down).\n"
                 + "\n".join(expanded_map_lines)

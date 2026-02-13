@@ -85,6 +85,12 @@ class PortkeyClient(LLMClientBase):
             # "max_tokens": self.max_tokens, 
         }
         
+        if 'gemini-pro' in self.actual_model_name_for_payload:
+            payload['thinking'] = {
+                "type": "enabled",
+                "budget_tokens": 32768
+            }
+        
         # Remove None values from payload, e.g. if max_tokens is not set on client
         # payload = {k: v for k, v in payload.items() if v is not None}
 

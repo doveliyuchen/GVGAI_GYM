@@ -5,6 +5,7 @@ from llm.visual.openai_client import OpenAIClient
 from llm.visual.qwen_client import QwenClient
 from llm.visual.portkey_client import PortkeyClient
 from llm.text.deepseek_client import DeepseekClient
+from llm.visual.gemini_client import GeminiClient
 
 def create_client_from_config(profile: str): # profile is the CLI name, e.g., "portkey-4o-mini", "gemini"
     """
@@ -20,10 +21,8 @@ def create_client_from_config(profile: str): # profile is the CLI name, e.g., "p
     client_type_from_config = config.get("client_type", profile) 
 
     # Normalize client_type for common naming conventions from CLI
-    if profile.startswith("portkey-") or profile == "gemini":
+    if profile.startswith("portkey-") or (config.get("client_type") == "portkey"):
         effective_client_type = "portkey"
-    elif profile.startswith("deepseek"):
-        effective_client_type = "deepseek"
     else:
         effective_client_type = client_type_from_config
 
@@ -35,6 +34,14 @@ def create_client_from_config(profile: str): # profile is the CLI name, e.g., "p
         client = QwenClient(model=config["model"])
     elif effective_client_type == "deepseek":
         client = DeepseekClient(model=config["model"])
+    elif effective_client_type == "gemini":
+        api_key_name = config.get("gemini_api_key")
+        if not api_key_name:
+            raise ValueError(f"Profile '{profile}' is missing 'gemini_api_key' in llm_config.json")
+        api_key = os.getenv(api_key_name)
+        if not api_key:
+            raise ValueError(f"Environment variable '{api_key_name}' for Gemini API key not found.")
+        client = GeminiClient(model=config["model"], api_key=api_key)
     elif effective_client_type == "portkey": 
         # This branch handles profiles explicitly marked with client_type: "portkey"
         # OR profiles named "gemini" or starting with "portkey-"

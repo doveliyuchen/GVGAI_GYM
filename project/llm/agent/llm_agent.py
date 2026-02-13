@@ -87,15 +87,12 @@ class LLMPlayer:
         self.position_history.append(current_position)
 
         config = get_profile_config(self.model_name)
-        # Get the appropriate model name for tokenizer/logging, 
-        # preferring "actual_model_name" for Portkey profiles, else "model" from the config.
-        # self.model_name is the profile name (e.g., "portkey-4o-mini")
-        model_for_tokenizer = config.get("actual_model_name", config.get("model"))
+        # The model name for tokenizer/logging is now resolved by get_profile_config.
+        model_for_tokenizer = config.get("model")
         if not model_for_tokenizer:
-            # Fallback if neither "actual_model_name" nor "model" is in the profile,
+            # Fallback if 'model' is not in the profile,
             # though this should ideally be caught by config validation earlier.
-            # Using self.model_name (profile name) as a last resort might not be ideal for tokenization.
-            print(f"Warning: Neither 'actual_model_name' nor 'model' found in profile '{self.model_name}'. Using profile name for tokenizer.")
+            print(f"Warning: 'model' not found in profile '{self.model_name}'. Using profile name for tokenizer.")
             model_for_tokenizer = self.model_name # Or a default like "gpt-3.5-turbo" if that's safer for tiktoken
 
         if self.mode == "zero-shot":

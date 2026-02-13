@@ -1,0 +1,10 @@
+slurm:
+  exp_id: gvgai_llm_ollama
+  n_nodes: 1
+  n_cpus: 16
+  n_gpus: 1  # Using GPU for Ollama local inference
+  gpu_type: rtx8000  # A100 GPU for faster inference
+  mem: 128000  # 128GB memory for Ollama models
+  account: 
+  time_hours: 120  # 48 hours (2 days) should be sufficient
+  conda_env: gvgai  # Conda environment to activate

@@ -274,69 +274,136 @@ def extract_avatar_position_from_state(
     return None
 
 
-def parse_action_from_response(response: str, action_map: dict) -> Tuple[int, str]:
-    reverse_action_dict = {v: k for k, v in action_map.items()}
-    keyword_to_action = {}
-    for aid, aname in action_map.items():
-        for word in aname.replace("ACTION_", "").lower().split("_"):
-            keyword_to_action[word] = aid
+import re
+import json
+from typing import Tuple
 
-    action_stmt_match = re.findall(r"\baction\s*[:=~\-]?\s*(\d+|ACTION_[A-Z_]+)", response, re.IGNORECASE)
-    for val in reversed(action_stmt_match):
-        if val.isdigit():
-            num = int(val)
-            if num in action_map:
-                return num, action_map[num]
-        elif val.upper() in reverse_action_dict:
-            return reverse_action_dict[val.upper()], val.upper()
+def parse_action_from_response(response: str, action_map: dict):
+    import re, json
 
-    nil_match = re.findall(r"ACTION[_\\]*NIL", response, re.IGNORECASE)
-    if nil_match:
-        return 0, action_map[0]
-
-    code_blocks = re.findall(r"```(?:python)?\s*([\s\S]*?)```", response)
-    for block in reversed(code_blocks):
-        num_match = re.findall(r"\b(\d+)\b", block)
-        for val in reversed(num_match):
-            num = int(val)
-            if num in action_map:
-                return num, action_map[num]
-
-        action_words = re.findall(r"ACTION_[A-Z_]+", block)
-        for act_name in reversed(action_words):
-            if act_name in reverse_action_dict:
-                return reverse_action_dict[act_name], act_name
-
-        word_matches = re.findall(r"\b(" + "|".join(re.escape(k) for k in keyword_to_action) + r")\b", block.lower())
-        for word in reversed(word_matches):
-            aid = keyword_to_action[word]
-            return aid, action_map[aid]
-
-    action_words = re.findall(r"ACTION_[A-Z_]+", response)
-    for act_name in reversed(action_words):
-        if act_name in reverse_action_dict:
-            return reverse_action_dict[act_name], act_name
-
-    full_pairs = re.findall(r"(\d+)\s*[:=]\s*(ACTION_[A-Z_]+)", response)
-    for num, act_name in reversed(full_pairs):
-        if act_name in reverse_action_dict:
-            return reverse_action_dict[act_name], act_name
-
-    number_matches = re.findall(r"\b(\d+)\b", response)
-    for num in reversed(number_matches):
-        val = int(num)
+    # ---------- 1. Prioritize "Action: 1" format ----------
+    # Handles: Action:1, action: 1, action 1, ignores case and symbols.
+    m = re.search(r"\baction\s*[:=\s]*?(\d+)", response, re.IGNORECASE)
+    if m:
+        val = int(m.group(1))
         if val in action_map:
             return val, action_map[val]
 
-    smart_matches = re.findall(r"\b(?:move|go|walk|run|head|step|proceed)[\s_]*(left|right|up|down|use|nothing|nil)\b", response.lower())
-    if smart_matches:
-        keyword = smart_matches[-1]
-        if keyword in keyword_to_action:
-            return keyword_to_action[keyword], action_map[keyword_to_action[keyword]]
+    # ---------- helpers ----------
+    reverse_action = {v: k for k, v in action_map.items()}
+    keyword_to_action = {
+        word: aid
+        for aid, name in action_map.items()
+        for word in name.replace("ACTION_", "").lower().split("_")
+    }
 
-    keyword_matches = re.findall(r"\b(" + "|".join(re.escape(k) for k in keyword_to_action) + r")\b", response.lower())
-    if keyword_matches:
-        keyword = keyword_matches[-1]
-        return keyword_to_action[keyword], action_map[keyword_to_action[keyword]]
+    # ---------- 2. JSON ----------
+    try:
+        m = re.search(r'{\s*"action"\s*:\s*".*?"[\s\S]*?}', response)
+        if m:
+            data = json.loads(m.group(0))
+            action_word = data.get("action", "").lower()
+            if action_word in keyword_to_action:
+                aid = keyword_to_action[action_word]
+                return aid, action_map[aid]
+    except Exception:
+        pass
+
+    # ---------- 3. Unified action statements ----------
+    # Covers:
+    #   Action: 4
+    #   Action: down
+    #   Action: 1 (ACTION_USE)
+    #   ACTION_DOWN (4)
+    action_blocks = re.findall(
+        r"(?:^|\n)\s*(?:Action\s*[:=]|ACTION_[A-Z_]+)([^\n]*)",
+        response,
+        re.IGNORECASE
+    )
+
+    for block in reversed(action_blocks):
+
+
+        # (b) ACTION_XXX
+        acts = re.findall(r"ACTION_[A-Z_]+", block.upper())
+        for act in reversed(acts):
+            if act in reverse_action:
+                return reverse_action[act], act
+
+        # (c) direction word
+        words = re.findall(
+            r"\b(left|right|up|down|use|nil|nothing)\b",
+            block.lower()
+        )
+        for w in reversed(words):
+            if w in keyword_to_action:
+                aid = keyword_to_action[w]
+                return aid, action_map[aid]
+
+    # ---------- 4. Boxed / symbol numbers ----------
+    boxed = re.findall(
+        r"(?:\\boxed{|\(|\u005b|\*\*|\*)\s*(\d+)\s*(?:}|\)|\u005d|\*\*|\*)",
+        response
+    )
+    for n in reversed(boxed):
+        val = int(n)
+        if val in action_map:
+            return val, action_map[val]
+    # ---------- (d) Final answer / tail direction ----------
+    lines = [ln.strip() for ln in response.strip().splitlines() if ln.strip()]
+    tail = "\n".join(lines[-5:])   # 只看最后 5 行
+
+    tail_words = re.findall(
+        r"\b(left|right|up|down|use|nil|nothing)\b",
+        tail.lower()
+    )
+    if tail_words:
+        w = tail_words[-1]
+        if w in keyword_to_action:
+            aid = keyword_to_action[w]
+            return aid, action_map[aid]
+
+    # ---------- 5. Plain numbers ----------
+    nums = re.findall(r"\b(\d+)\b", response)
+    for n in reversed(nums):
+        val = int(n)
+        if val in action_map:
+            return val, action_map[val]
+
+    # ---------- 6. Natural language (last resort) ----------
+    words = re.findall(
+        r"\b(?:move|go|walk|run|head|step|proceed)?\s*(left|right|up|down|use|nothing|nil)\b",
+        response.lower()
+    )
+    if words:
+        aid = keyword_to_action[words[-1]]
+        return aid, action_map[aid]
 
     return 0, action_map[0]
+
+
+
+if __name__ == "__main__":
+   
+    action_map = {
+    0: "ACTION_NIL",
+    1: "ACTION_USE",
+    2: "ACTION_UP",
+    3: "ACTION_DOWN",
+    4: "ACTION_LEFT",
+    5: "ACTION_RIGHT"
+    }
+    test_responses = [
+        '''```Action:1```
+Feedback: I am using the fire action to launch a missile upward at column 17 to destroy the alien at (0, 17), as I have a clear path and there are no immediate threats in my current column.
+''',
+        'ACTION_DOWN (4)',
+        '{"action": "use"}',
+        'I will move left now.',
+        'The action is 3.',
+        'Let me **2** this time.',
+        'Response: Action:1'
+    ]
+    for resp in test_responses:
+        aid, aname = parse_action_from_response(resp, action_map)
+        print(f"Response: {resp}  -->  Parsed Action: {aid} ({aname})")
