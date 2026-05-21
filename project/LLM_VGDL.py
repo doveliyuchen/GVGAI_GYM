@@ -1,5 +1,4 @@
 import os
-import gym
 import gym_gvgai as gvgai
 import numpy as np
 import re
@@ -41,7 +40,7 @@ class show_state_gif():
     def __init__(self):
         self.frames = []
     def __call__(self, env):
-        self.frames.append(env.render(mode='rgb_array'))
+        self.frames.append(env.render())
 
     def save(self, game_name):
         gif_name = game_name + '.gif'
@@ -66,7 +65,7 @@ def show_state(env, step, name, info, directory, vgdl_representation=None):
     # Render the image
     plt.figure(3)
     plt.clf()
-    img = env.render(mode='rgb_array')
+    img = env.render()
     plt.imshow(img)
 
 
@@ -413,4 +412,5 @@ if __name__ == "__main__":
                 generate_report(reward_system, step_count,dir+"_"+llm)
 
     
+
 

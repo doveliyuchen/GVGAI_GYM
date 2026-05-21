@@ -12,8 +12,8 @@ dir = path.dirname(__file__)
 gvgai_path = path.join(dir, "gvgai", "clients", "GVGAI-PythonClient", "src", "utils")
 sys.path.append(gvgai_path)
 
-import gym
-from gym import error, spaces, utils
+import gymnasium as gym
+from gymnasium import error, spaces, utils
 import ClientCommGYM as gvgai
 
 class GVGAI_Env(gym.Env):
@@ -25,7 +25,7 @@ class GVGAI_Env(gym.Env):
 
     def __init__(self, game, level, version):
         self.__version__ = "0.0.2"
-        metadata = {'render.modes': ['human', 'rgb_array']}
+        self.metadata = {'render_modes': ['human', 'rgb_array'], 'render_fps': 30}
 
         #Send the level to play
         self.GVGAI = gvgai.ClientCommGYM(game, version, level, dir)
@@ -66,28 +66,21 @@ class GVGAI_Env(gym.Env):
         state, reward, isOver, info = self.GVGAI.step(action)
         
         self.img = state
-        return state, reward, isOver, info
+        return state, reward, isOver, False, info
 
-    def reset(self):
+    def reset(self, *, seed=None, options=None):
         """
         Reset the state of the environment and returns an initial observation.
         Returns
         -------
         observation (object): the initial observation of the space.
         """
-        self.img =  self.GVGAI.reset(self.lvl)
-        return self.img
+        self.img = self.GVGAI.reset(self.lvl)
+        return self.img, {}
 
-    def render(self, mode='human'):
+    def render(self):
         img = self.img[:,:,:3]
-        if mode == 'rgb_array':
-            return img
-        elif mode == 'human':
-            from gym.envs.classic_control import rendering
-            if self.viewer is None:
-                self.viewer = rendering.SimpleImageViewer()
-            self.viewer.imshow(img)
-            return self.viewer.isopen
+        return img
 
     def close(self):
         if self.viewer is not None:

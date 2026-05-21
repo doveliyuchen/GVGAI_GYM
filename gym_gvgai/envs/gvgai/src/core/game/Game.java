@@ -2151,6 +2151,18 @@ public abstract class Game {
 	}
 
 	/**
+	 * Initializes (or re-initializes) the game's RNG.
+	 *
+	 * This is primarily useful for external step-by-step integrations that
+	 * cannot call the private prepareGame(...) lifecycle method.
+	 *
+	 * @param randomSeed seed for this game's random generator.
+	 */
+	public void initRandomGenerator(int randomSeed) {
+		random = new Random(randomSeed);
+	}
+
+	/**
 	 * Returns the current game tick of this game.
 	 *
 	 * @return the current game tick of this game.

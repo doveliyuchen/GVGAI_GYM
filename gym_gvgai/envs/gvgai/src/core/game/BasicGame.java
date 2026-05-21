@@ -171,8 +171,10 @@ public class BasicGame extends Game {
 						if (s.autotiling) {
 
 							ArrayList<Image> images = s.images.get("NONE");
-							if(images.size() > 0)
-								s.image = images.get(similarTiles);
+							if(images.size() > 0) {
+								int safeIndex = Math.max(0, Math.min(similarTiles, images.size() - 1));
+								s.image = images.get(safeIndex);
+							}
 						}
 						if (s.randomtiling >= 0) {
 							Random random = new Random(randomSeed);

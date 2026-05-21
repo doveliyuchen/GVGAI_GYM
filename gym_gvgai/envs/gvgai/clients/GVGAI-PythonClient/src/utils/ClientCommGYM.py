@@ -7,7 +7,10 @@ import tempfile
 import shutil
 
 import numpy as np
-import imageio
+try:
+    import imageio.v2 as imageio  # imageio >= 2.28 (Python 3.11+)
+except ImportError:
+    import imageio  # type: ignore[no-redef]
 
 import subprocess
 import argparse
@@ -377,7 +380,7 @@ class ClientCommGYM:
 
     def addLevel(self, path):
         lvlName = os.path.join(self.tempDir.name, 'game_lvl5.txt')
-        if(path is ''):
+        if path == '':
             open(lvlName, 'w+').close()
         else:
             shutil.copyfile(path, lvlName)

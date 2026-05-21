@@ -1,4 +1,4 @@
-import gym
+import gymnasium as gym
 import gym_gvgai as gvgai
 import random
 import numpy as np
@@ -33,16 +33,16 @@ class MultiGameEnv(gym.Env):
                 print(f"Error creating environment {env_name}: {e}. Trying another.")
 
     def step(self, action):
-        obs, reward, done, info = self.current_env.step(action)
-        return self._pad_obs(obs), reward, done, info
+        obs, reward, terminated, truncated, info = self.current_env.step(action)
+        return self._pad_obs(obs), reward, terminated, truncated, info
 
-    def reset(self):
+    def reset(self, *, seed=None, options=None):
         self._make_env()
-        obs = self.current_env.reset()
-        return self._pad_obs(obs)
+        obs, info = self.current_env.reset(seed=seed, options=options)
+        return self._pad_obs(obs), info
 
-    def render(self, mode='human'):
-        return self.current_env.render(mode=mode)
+    def render(self):
+        return self.current_env.render()
 
     def close(self):
         if self.current_env:

@@ -1,0 +1,16 @@
+{
+  "include_rules": true,
+  "include_mapping": true,
+  "include_last_state": true,
+  "include_last_image": true,
+  "include_current_state": true,
+  "include_current_image": true,
+  "include_reward": true,
+  "include_reflection": true,
+  "include_reflection_history": true,
+  "include_plan":true,
+  "include_actions": true,
+  "include_avatar_position": true,
+  "system": "You are an intelligent player playing a video game, and you have a friend provide you strategy. Interpret the state, rule, strategy and act accordingly. Notice that your avatar position is one of the most important information, if the position doesn't change from the last state, you need to analyze the state and make a different action from the last time.",
+  "instruction": "=== Mechanics Note ===\nIf your position does not change after a directional move, the avatar may have rotated — repeat the same direction to actually move. Action 0 does nothing. Reason through the game state, then respond with your chosen action in this exact format:\n```\nAction:<action number>\n```"
+}

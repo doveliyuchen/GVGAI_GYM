@@ -1,0 +1,200 @@
+{
+  "o3-mini": {
+    "client_type": "portkey",
+    "portkey_base_url": "https://ai-gateway.apps.cloud.rt.nyu.edu",
+    "portkey_api_key_env_var": "PORTKEY_API_KEY",
+    "virtual_key_env_var": "PORTKEY_VIRTUAL_KEY_O3_MINI",
+    "model": "@o3-mini-5791cb/o3-mini",
+    "actual_model_name": "o3-mini"
+  },
+  "4o-mini": {
+    "client_type": "openai",
+    "model": "gpt-4o-mini",
+    "parameters": {
+      "temperature": 0,
+      "max_tokens": 4000,
+      "max_context_tokens": 30000,
+      "system_prompt": "You are a helpful AI assistant playing video games."
+    }
+  },
+  "gemini-pro": {
+    "client_type": "portkey",
+    "portkey_base_url": "https://ai-gateway.apps.cloud.rt.nyu.edu",
+    "portkey_api_key_env_var": "PORTKEY_API_KEY",
+    "virtual_key_env_var": "PORTKEY_VIRTUAL_KEY_VERTEX_AI",
+    "model": "@vertex-ai-3e806d/gemini-2.5-pro",
+    "actual_model_name": "gemini-2.5-pro"
+  },
+    "gemini-2.0": {
+    "client_type": "portkey",
+    "portkey_base_url": "https://ai-gateway.apps.cloud.rt.nyu.edu",
+    "portkey_api_key_env_var": "PORTKEY_API_KEY",
+    "virtual_key_env_var": "PORTKEY_VIRTUAL_KEY_VERTEX_AI",
+    "model": "@vertex-ai-3e806d/gemini-2.0-flash-exp",
+    "actual_model_name": "gemini-2.0-flash-exp"
+  },
+  "llama3.1": {
+    "client_type": "portkey",
+    "portkey_base_url": "https://ai-gateway.apps.cloud.rt.nyu.edu",
+    "portkey_api_key_env_var": "PORTKEY_API_KEY",
+    "virtual_key_env_var": "PORTKEY_VIRTUAL_KEY_VERTEX_AI",
+    "model": "@vertex-ai-3e806d/meta.llama-3.1-405b-instruct-maas",
+    "actual_model_name": "meta.llama-3.1-405b-instruct-maas"
+  },
+  "llama3.2": {
+    "client_type": "portkey",
+    "portkey_base_url": "https://ai-gateway.apps.cloud.rt.nyu.edu",
+    "portkey_api_key_env_var": "PORTKEY_API_KEY",
+    "virtual_key_env_var": "PORTKEY_VIRTUAL_KEY_VERTEX_AI",
+    "model": "@vertex-ai-3e806d/meta.llama-3.2-90b-vision-instruct-maas",
+    "actual_model_name": "meta.llama-3.2-90b-vision-instruct-maas"
+  },
+  "qwen3": {
+    "client_type": "ollama",
+    "model": "qwen3:32b",
+    "parameters": {
+      "temperature": 0,
+      "max_tokens": 2000,
+      "system_prompt": "You are a helpful AI assistant playing video games."
+    }
+  },
+    "gpt-oss": {
+    "client_type": "ollama",
+    "model": "gpt-oss:20b",
+    "parameters": {
+      "temperature": 0,
+      "max_tokens": 2000,
+      "system_prompt": "You are a helpful AI assistant playing video games."
+    }
+  },
+  "deepseek-r1-ollama": {
+    "client_type": "ollama",
+    "model": "deepseek-r1:32b",
+    "parameters": {
+      "temperature": 0,
+      "max_tokens": 2000,
+      "system_prompt": "You are a helpful AI assistant playing video games."
+    }
+  },
+    "deepseek-r3.2": {
+    "client_type": "deepseek",
+    "model": "deepseek-reasoner",
+    "parameters": {
+      "temperature": 0,
+      "max_tokens": 64000,
+      "system_prompt": "You are a helpful AI assistant playing video games."
+    }
+  },
+  "deepseek": {
+    "client_type": "deepseek",
+    "model": "deepseek-chat",
+    "parameters": {
+      "temperature": 0,
+      "max_tokens": 6400,
+      "system_prompt": "You are a helpful AI assistant playing video games."
+    }
+},
+"gemini3-flash": {
+    "client_type": "gemini",
+    "model": "gemini-3-flash-preview",
+    "gemini_api_key": "GEMINI_API_KEY",
+    "parameters": {
+      "temperature": 0,
+      "max_tokens": 4400,
+      "system_prompt": "You are a helpful AI assistant playing video games."
+    }
+  },
+
+  "vllm-qwen3.5": {
+    "client_type": "vllm",
+    "model": "Qwen/Qwen3.5-9B",
+    "base_url": "http://localhost:8000",
+    "api_key": "EMPTY",
+    "parameters": {
+      "temperature": 0,
+      "max_tokens": 2048,
+      "enable_thinking": true,
+      "system_prompt": "You are an intelligent player playing a video game."
+    }
+  },
+
+  "vllm-local": {
+    "client_type": "vllm",
+    "model": "meta-llama/Llama-3.1-8B-Instruct",
+    "base_url": "http://localhost:8000",
+    "api_key": "EMPTY",
+    "parameters": {
+      "temperature": 0,
+      "max_tokens": 2000,
+      "system_prompt": "You are a helpful AI assistant playing video games."
+    }
+  },
+
+  "vllm-llama3-70b": {
+    "client_type": "vllm",
+    "model": "meta-llama/Llama-3.1-70B-Instruct",
+    "base_url": "http://localhost:8000",
+    "api_key": "EMPTY",
+    "parameters": {
+      "temperature": 0,
+      "max_tokens": 2000,
+      "system_prompt": "You are a helpful AI assistant playing video games."
+    }
+  },
+
+  "vllm-qwen2.5": {
+    "client_type": "vllm",
+    "model": "Qwen/Qwen2.5-7B-Instruct",
+    "base_url": "http://localhost:8000",
+    "api_key": "EMPTY",
+    "parameters": {
+      "temperature": 0,
+      "max_tokens": 2000,
+      "system_prompt": "You are a helpful AI assistant playing video games."
+    }
+  },
+
+  "vllm-finetuned": {
+    "client_type": "vllm",
+    "model": "VLLM_FINETUNED_MODEL",
+    "base_url": "http://localhost:8000",
+    "api_key": "EMPTY",
+    "parameters": {
+      "temperature": 0,
+      "max_tokens": 2000,
+      "system_prompt": "You are a helpful AI assistant playing video games."
+    }
+  },
+
+  "vllm-qwen27b": {
+    "client_type": "vllm",
+    "model": "Qwen/Qwen3.5-27B",
+    "base_url": "http://localhost:8765",
+    "api_key": "EMPTY",
+    "max_model_len": 26384,
+    "gpu_memory_utilization": 0.9,
+    "parameters": {
+      "temperature": 0,
+      "max_tokens": 10000,
+      "enable_thinking": true,
+      "thinking_budget": 8000,
+      "system_prompt": "You are an intelligent agent playing a video game. Carefully analyze the current game state and choose the optimal action."
+    }
+  },
+
+  "vllm-qwen9b": {
+    "client_type": "vllm",
+    "model": "Qwen/Qwen3.5-9B",
+    "base_url": "http://localhost:8765",
+    "api_key": "EMPTY",
+    "max_model_len": 26384,
+    "gpu_memory_utilization": 0.9,
+    "parameters": {
+      "temperature": 0,
+      "max_tokens": 10000,
+      "enable_thinking": true,
+      "thinking_budget": 8000,
+      "system_prompt": "You are an intelligent agent playing a video game. Carefully analyze the current game state and choose the optimal action."
+    }
+  }
+}

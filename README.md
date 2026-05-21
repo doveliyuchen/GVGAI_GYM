@@ -1,58 +1,215 @@
-# GVGAI Benchmark for LLMs
+# GVGAI-JPype: LLM Benchmark for General Video Game AI
 
-This project is an ongoing effort to create a **benchmark for Large Language Models (LLMs)** within the **Generic Video Game AI (GVGAI)** framework. Originally forked from [GVGAI Gym](https://github.com/rubenrtorrado/GVGAI_GYM), this repository has been adapted to evaluate how LLMs perform in video game environments described using the **Video Game Description Language (VGDL)**.
+A benchmark for evaluating **Large Language Models (LLMs)** on the [GVGAI](http://www.gvgai.net) game suite. Games are defined in **VGDL** (Video Game Description Language). This fork replaces the original subprocess + TCP-socket architecture with a **JPype direct-JVM bridge**, eliminating port management and serialisation overhead while keeping the Gymnasium API identical.
 
-The GVGAI framework has been widely used since 2019 for competitions like the **GVGAI Learning Competition** and research in reinforcement learning and planning agents. While traditional approaches relied on access to forward models or reinforcement learning, this project explores how LLMs can interact with game states—both text-based and image-based—to make decisions in these environments.
-
-For more details about the original competition rules, rankings, and related resources, visit the [AI in Games website](http://www.aingames.cn/), maintained by [Hao Tong](https://github.com/HawkTom) and [Jialin Liu](https://github.com/ljialin).
+Originally forked from [GVGAI Gym](https://github.com/rubenrtorrado/GVGAI_GYM).
 
 ---
 
-## Key Features
+## Architecture
 
-- **LLM Integration**: The framework now supports sending **text-based states** and **image-based states** to LLMs, enabling them to interpret and act within GVGAI games.
-- **Benchmarking**: Evaluate LLM performance across various GVGAI game levels, comparing their decision-making capabilities to traditional planning and RL agents.
-- **Ongoing Development**: This project is actively being developed to refine the benchmark and explore new ways to integrate LLMs into game AI research.
+```
+Python (gymnasium env)
+        │
+        │  JPype  (direct JVM call-in, no sockets)
+        ▼
+Java GVGAIBridge
+        ├── reset(levelIdx, seed)
+        ├── step(actionName)
+        ├── renderToBytes()           →  pixel image (PNG via Java2D)
+        ├── getObservationString()    →  discrete grid (itypeKey symbols)
+        └── getGameScore / isGameOver / getWinner
+```
+
+The JVM starts once per Python process. All `gvgai.make()` calls within that process share it.
 
 ---
 
+## State Representation
 
-## Installation
+Every `step()` returns **both** representations simultaneously:
 
-### Option 1: Using Docker
-Follow the step-by-step [guidelines](https://github.com/SUSTechGameAI/GVGAI_GYM/blob/master/docs/Guidelines-Docker-GVGAI-RLbaselines.md) to set up the framework with Docker (GPU or CPU support).
+| Field | Type | Description |
+|---|---|---|
+| `obs` | `(H, W, 4)` uint8 | **Pixel** — RGBA image rendered by Java2D. This is what `observation_space` describes. |
+| `info["ascii"]` | string | **Discrete** — grid of `itypeKey` sprite-type tokens; rows by `\n`, columns by `,` |
+| `info["grid"]` | numpy object array | 2-D parsed version of `info["ascii"]` |
 
-### Option 2: Manual Setup
-1. Clone this repository to your local machine.
-2. Install dependencies using `pip install -e <package-location>`.
-3. Install a Java compiler (e.g., `sudo apt install openjdk-9-jdk-headless`).
+The LLM agent uses `info["ascii"]` as its primary input (`text` mode). The pixel `obs` is used for GIF recording and `vision`/`multimodal` prompting.
 
 ---
 
 ## Requirements
 
-- **Anaconda**: Version published after 2019.10 is recommended.
-- **Java**: JDK 9 is recommended.
-- **Python**: Python 3 (3.7 or 3.8 recommended). **Python 2 is not supported.**
+| Dependency | Version | Notes |
+|---|---|---|
+| Python | 3.11 | conda env `gvgai_jpype` |
+| Java JDK | 9+ | `javac` must be on PATH |
+| numpy | < 2.0 | numpy 2.x causes a DLL crash on Windows; use 1.26.4 |
+| gymnasium | 1.x | |
+| jpype1 | 1.x | |
+| pillow, psutil, python-dotenv | any recent | |
 
 ---
 
-## Resources
+## Installation
 
-[GVGAI website](http://www.gvgai.net)
+### 1. Build Java
 
-[original GVGAI-Gym (master branch)](https://github.com/rubenrtorrado/GVGAI_GYM) 
+```bash
+git clone <this-repo>
+cd GVGAI_jpype
+python build.py
+```
 
-[Demo video on YouTube](https://youtu.be/O84KgRt6AJI)
+Compiles all sources under `gym_gvgai/envs/gvgai/src/` into `gym_gvgai/envs/gvgai/GVGAI_Build/`.
 
-[AI in Games website for more about competition updates](http://www.aingames.cn/#sources)
+### 2. Install Python package
 
-[*Deep Reinforcement Learning for General Video Game AI*](https://arxiv.org/abs/1806.02448) published at IEEE CIG2018
+```bash
+conda activate gvgai_jpype
+pip install -e .
+```
+
+> **Windows gotcha** — if you see exit code `-1066598273` on any import, numpy 2.x is installed. Fix with:
+> ```bash
+> pip install "numpy<2.0" --force-reinstall
+> ```
+
+### 3. Configure API keys
+
+Create a `.env` file in the project root:
+
+```
+OPENAI_API_KEY=...
+GEMINI_API_KEY=...
+DEEPSEEK_API_KEY=...
+PORTKEY_API_KEY=...               # NYU AI Gateway
+PORTKEY_VIRTUAL_KEY_VERTEX_AI=... # Gemini / Llama via Vertex
+PORTKEY_VIRTUAL_KEY_O3_MINI=...
+```
+
+LLM profiles are defined in [`llm_config.json`](llm_config.json):
+
+| Profile | Backend | Model |
+|---|---|---|
+| `4o-mini` | OpenAI | gpt-4o-mini |
+| `gemini-pro` | Portkey → Vertex AI | gemini-2.5-pro |
+| `gemini3-flash` | Gemini API | gemini-3-flash-preview |
+| `deepseek` | DeepSeek | deepseek-chat |
+| `deepseek-r3.2` | DeepSeek | deepseek-reasoner |
+| `o3-mini` | Portkey → OpenAI | o3-mini |
+| `llama3.1` | Portkey → Vertex AI | Llama-3.1-405B |
+| `qwen3` | Ollama (local) | qwen3:32b |
+| `vllm-local` | vLLM (local) | configurable |
 
 ---
+
+## Running Experiments
+
+```bash
+python run_llm_gvgai.py \
+    --games aliens zelda \
+    --models gemini3-flash \
+    --modes zero-shot contextual \
+    --input_modes text \
+    --max_steps 200 \
+    --num_runs 1
+```
+
+### Arguments
+
+| Argument | Default | Description |
+|---|---|---|
+| `--games` | all 119 | Space-separated game names |
+| `--models` | *(required)* | Profile names from `llm_config.json` |
+| `--modes` | `zero-shot contextual` | Agent reasoning mode |
+| `--input_modes` | `text` | `text` / `vision` / `multimodal` |
+| `--max_steps` | 2000 | Max steps per episode |
+| `--num_runs` | 1 | Runs per game × model × mode combination |
+| `--force_rerun` | off | Re-run even if results already exist |
+| `--resume_game` | — | Skip games before this one (alphabetical) |
+
+Results are saved under `llm_agent_runs_output/<model>/<game>/<mode>/run_<n>/`.
+
+Each run produces:
+- `benchmark_analysis.json` — per-step log + summary statistics
+- `gameplay.gif` — rendered frames
+
+### Input modes
+
+| Mode | What the LLM sees |
+|---|---|
+| `text` | ASCII symbolic grid only |
+| `vision` | Screenshot (pixel image) only |
+| `multimodal` | ASCII grid + screenshot |
+
+### Quick sanity test (no LLM)
+
+```python
+import gym_gvgai as gvgai, random
+
+env = gvgai.make('gvgai-aliens-lvl0-v0')
+env.reset()
+for _ in range(10):
+    obs, reward, terminated, truncated, info = env.step(random.randrange(env.action_space.n))
+    print(reward, info['winner'], len(info['ascii']))
+env.close()
+```
+
+---
+
+## Games
+
+**119 playable games**, all confirmed working across all available levels. Environment IDs follow the pattern `gvgai-<game>-lvl<n>-v<version>`.
+
+Most games have 5 levels (`lvl0`–`lvl4`). A few have fewer:
+
+| Game | Levels |
+|---|---|
+| flower, invest, investdie, waferthinmints, waferthinmintsexit | 1 (lvl0 only) |
+| bravekeeper, cec1, cec2, cec3, golddigger, greedymouse, sistersavior, trappedhero, treasurekeeper, waterpuzzle | 2 (lvl0–lvl1) |
+
+Three directories (`testgame1_v0`, `testgame2_v0`, `testgame3_v0`) are internal engine tests and are automatically excluded by the experiment runner.
+
+---
+
+## Project Structure
+
+```
+GVGAI_jpype/
+├── build.py                     # Java compilation script
+├── run_llm_gvgai.py             # Main experiment runner
+├── llm_config.json              # LLM profile definitions
+├── .env                         # API keys (not committed)
+│
+├── gym_gvgai/
+│   ├── __init__.py              # Gymnasium env registration (auto-discovers games)
+│   └── envs/
+│       ├── gvgai_env_jpype.py   # Gymnasium env — JPype backend
+│       ├── games/               # 119 VGDL game definitions (+ 3 testgames)
+│       └── gvgai/
+│           ├── src/             # Java source: GVGAIBridge + VGDL engine
+│           └── GVGAI_Build/     # Compiled .class files (generated by build.py)
+│
+└── llm/
+    ├── agent/
+    │   ├── llm_agent.py         # LLMPlayer: action selection, context, logging
+    │   └── llm_translator.py    # VGDL → natural language translation
+    ├── visual/                  # LLM client implementations (OpenAI, Gemini, vLLM, …)
+    ├── utils/
+    │   ├── config.py            # Profile loader (llm_config.json)
+    │   ├── build_prompt.py      # Prompt construction
+    │   ├── agent_components.py  # ASCII state generation, GIF saving, action parsing
+    │   └── vgdl_utils.py        # VGDL / level file I/O
+    └── analysis/                # Post-hoc metrics and visualisation
+```
+
+---
+
 ## References
 
-1. [G. Brockman, V. Cheung, L. Pettersson, J. Schneider, J. Schulman, J. Tang, and W. Zaremba, “Openai gym,” 2016.](https://github.com/openai/gym)
-2. [A. Hill, A. Raffin, M. Ernestus, A. Gleave, A. Kanervisto, R. Traore, P. Dhariwal, C. Hesse, O. Klimov, A. Nichol, M. Plappert, A. Radford, J. Schulman, S. Sidor, and Y. Wu, “Stable baselines,” https://github.com/hill-a/stable-baselines, 2018.](https://github.com/hill-a/stable-baselines)
-3. [R. R. Torrado, P. Bontrager, J. Togelius, J. Liu, and D. Perez-Liebana, “Deep reinforcement learning for general video game AI,” in Computational Intelligence and Games (CIG), 2018 IEEE Conference on. IEEE, 2018.](https://github.com/rubenrtorrado/GVGAI_GYM)
-4. [D Perez-Liebana, J Liu, A Khalifa, RD Gaina, J Togelius, SM Lucas, "General video game AI: A multitrack framework for evaluating agents, games, and content generation algorithms," in IEEE Transactions on Games, 11(3), 195-214.](https://arxiv.org/pdf/1802.10363)
+1. Torrado et al., *Deep Reinforcement Learning for General Video Game AI*, IEEE CIG 2018. ([paper](https://arxiv.org/abs/1806.02448))
+2. Perez-Liebana et al., *General Video Game AI: A Multitrack Framework*, IEEE Transactions on Games. ([paper](https://arxiv.org/pdf/1802.10363))
+3. [Original GVGAI Gym](https://github.com/rubenrtorrado/GVGAI_GYM) — Ruben Rodriguez Torrado et al.
+4. Brockman et al., *OpenAI Gym*, 2016.

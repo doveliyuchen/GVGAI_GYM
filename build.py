@@ -2,6 +2,7 @@ import os
 import sys
 import shutil
 import subprocess
+import tempfile
 from argparse import ArgumentParser
 
 #Compile java code 
@@ -36,8 +37,27 @@ def main(dir):
 			#Build Java files
 			src_path = os.path.join(dir, "src")
 			source = get_src(src_path)
-			# Add -Xlint flags to get detailed warnings
-			subprocess.run(["javac", "-d", path, "-Xlint:deprecation", "-Xlint:unchecked"] + source, check=True)
+
+			# On Windows, command line length can exceed limits when passing
+			# thousands of .java files directly. Use javac argument file to avoid
+			# WinError 206 (filename or extension too long).
+			arg_file = None
+			try:
+				with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False, encoding="utf-8") as fp:
+					arg_file = fp.name
+					for java_file in source:
+						# javac argument files treat backslash as escape char.
+						# Use forward slashes to avoid path corruption on Windows.
+						normalized = java_file.replace("\\", "/")
+						fp.write(f"{normalized}\n")
+
+				subprocess.run(["javac", "-d", path, f"@{arg_file}"], check=True)
+			finally:
+				if arg_file and os.path.exists(arg_file):
+					try:
+						os.remove(arg_file)
+					except OSError:
+						pass
 
 			#Save hash of build in directory
 			hash = check_build.dirHash(src_path)
