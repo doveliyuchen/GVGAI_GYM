@@ -1,4 +1,4 @@
-# GVGAI-JPype: LLM Benchmark for General Video Game AI
+# GVGAI-GYM: LLM Benchmark for General Video Game AI
 
 A benchmark for evaluating **Large Language Models (LLMs)** on the [GVGAI](http://www.gvgai.net) game suite. Games are defined in **VGDL** (Video Game Description Language). This fork replaces the original subprocess + TCP-socket architecture with a **JPype direct-JVM bridge**, eliminating port management and serialisation overhead while keeping the Gymnasium API identical.
 
