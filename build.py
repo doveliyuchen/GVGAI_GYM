@@ -48,8 +48,12 @@ def main(dir):
 					for java_file in source:
 						# javac argument files treat backslash as escape char.
 						# Use forward slashes to avoid path corruption on Windows.
+						# Paths with spaces must be double-quoted inside the argument file.
 						normalized = java_file.replace("\\", "/")
-						fp.write(f"{normalized}\n")
+						if " " in normalized:
+							fp.write(f'"{normalized}"\n')
+						else:
+							fp.write(f"{normalized}\n")
 
 				subprocess.run(["javac", "-d", path, f"@{arg_file}"], check=True)
 			finally:
